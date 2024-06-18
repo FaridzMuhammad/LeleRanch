@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Home, AlarmClock, FishSymbol, Wrench } from "lucide-react";
+import { SidebarDesktop } from "@/components/sidebar-desktop";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,8 +17,37 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className="dark">
+      <body className={inter.className}>
+
+        <SidebarDesktop sidebarItems={{
+
+          links: [
+            {
+              label: "Dashboard",
+              href: "/",
+              icon: Home,
+            },
+            {
+              label: "Jadwal",
+              href: "/jadwal",
+              icon: AlarmClock,
+            },
+            {
+              label: "Pakan",
+              href: "/pakan",
+              icon: FishSymbol,
+            },
+            {
+              label: "Alat",
+              href: "/alat",
+              icon: Wrench,
+            },
+          ],
+        }} />
+
+        <main className='ml-[300px] mt-3'>{children}</main>
+      </body>
     </html>
   );
 }
