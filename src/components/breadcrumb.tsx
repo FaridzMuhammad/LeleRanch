@@ -12,7 +12,7 @@ const Breadcrumb = () => {
 
   return (
     <nav aria-label="breadcrumb">
-      <ol className="flex space-x-2 text-lxl text-white">
+      <ol className="flex space-x-2 text-2xl text-white"> {/* Updated class to text-2xl */}
         <li>
           <Link href="/" className="hover:white flex items-center rounded-xl">
             <Icon icon={homeIcon} className="w-7 h-7" />
@@ -24,7 +24,7 @@ const Breadcrumb = () => {
 
           return (
             <li key={href} className="flex items-center">
-              <span className="mx-2">/</span>
+              <span className="mx-2"> {'>'} </span>
               {isLast ? (
                 <span className="text-white capitalize">{segment}</span>
               ) : (

@@ -39,10 +39,10 @@ const HeaderMobile = () => {
       className={`fixed inset-0 z-50 w-full md:hidden ${isOpen ? '' : 'pointer-events-none'}`}
       ref={containerRef}
     >
-      <motion.div className="absolute inset-0 right-0 w-full bg-white" variants={sidebar} />
+      <motion.div className="absolute inset-0 right-0 w-full bg-primary-color" variants={sidebar} />
       <motion.ul
         variants={variants}
-        className="absolute grid w-full gap-3 px-10 py-16 max-h-screen overflow-y-auto"
+        className="absolute grid w-full gap-3 px-10 py-16 max-h-screen overflow-y-auto text-white"
       >
         {SIDENAV_ITEMS.map((item, idx) => {
           const isLastItem = idx === SIDENAV_ITEMS.length - 1;
@@ -77,6 +77,7 @@ const MenuToggle = ({ toggle }: { toggle: () => void }) => (
           closed: { d: 'M 2 2.5 L 20 2.5' },
           open: { d: 'M 3 16.5 L 17 2.5' },
         }}
+        stroke="white"
       />
       <Path
         d="M 2 9.423 L 20 9.423"
@@ -85,19 +86,21 @@ const MenuToggle = ({ toggle }: { toggle: () => void }) => (
           open: { opacity: 0 },
         }}
         transition={{ duration: 0.1 }}
+        stroke="white"
       />
       <Path
         variants={{
           closed: { d: 'M 2 16.346 L 20 16.346' },
           open: { d: 'M 3 2.5 L 17 16.346' },
         }}
+        stroke="white"
       />
     </svg>
   </button>
 );
 
 const Path = (props: SVGMotionProps<SVGPathElement>) => (
-  <motion.path fill="transparent" strokeWidth="2" stroke="hsl(0, 0%, 18%)" strokeLinecap="round" {...props} />
+  <motion.path fill="transparent" strokeWidth="2" strokeLinecap="round" {...props} />
 );
 
 const MenuItem = ({ className, children }: { className?: string; children?: ReactNode }) => {

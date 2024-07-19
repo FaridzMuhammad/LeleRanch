@@ -27,14 +27,8 @@ const SideNav = () => {
         </div>
       </div>
 
-      <div className="flex flex-col items-center space-y-2 md:px-6 mb-6">
-        <Link
-          href="/profile"
-          className="flex flex-row items-center space-x-3 p-2 rounded-lg text-white hover:bg-tertiary-color"
-        >
-          <Image src="/logo.png" alt="Profile" className="h-10 w-10 rounded-full" width={40} height={40} />
-          <span className="font-semibold text-xl flex">Profile</span>
-        </Link>
+      <div className="flex flex-col space-y-2 md:px-6 mb-6">
+        <MenuItem item={{ path: '/profile', title: 'Profile', icon: <Image src="/logo.png" alt="Profile" className="h-10 w-10 rounded-full" width={40} height={40} /> }} />
       </div>
     </div>
   );
