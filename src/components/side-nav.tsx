@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 
 import { SIDENAV_ITEMS } from '@/constants';
 import { SideNavItem } from '@/types';
-import { Icon } from '@iconify/react';
 
 const SideNav = () => {
   return (
