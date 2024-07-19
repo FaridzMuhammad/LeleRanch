@@ -4,7 +4,7 @@ import React, { ReactNode, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SIDENAV_ITEMS } from '@/constants';
-import { motion, useCycle, MotionProps, SVGMotionProps } from 'framer-motion';
+import { motion, useCycle, SVGMotionProps } from 'framer-motion';
 
 const sidebar = {
   open: (height = 1000) => ({
