@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SettingsPage = () => {
+const AlatPage = () => {
   return (
     <>
       <span className="font-bold text-4xl">Settings</span>
@@ -11,4 +11,4 @@ const SettingsPage = () => {
   );
 };
 
-export default SettingsPage;
+export default AlatPage;

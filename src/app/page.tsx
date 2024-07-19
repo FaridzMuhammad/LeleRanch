@@ -1,5 +1,6 @@
 export default function Home() {
   return (
+    
     <div className="p-6 bg-primary-color h-screen">
       <span className="font-bold text-4xl text-white">Dashboard</span>
       
@@ -18,7 +19,7 @@ export default function Home() {
         </div>
       </div>
       
-      <div className="bg-secondary-color rounded-lg p-4 text-white">
+      <div className="bg-secondary-color rounded-lg p-8 text-white">
         <table className="w-full text-left">
           <thead>
             <tr>
