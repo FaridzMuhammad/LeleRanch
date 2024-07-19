@@ -1,8 +1,6 @@
-import { Home } from "lucide-react";
 import { SidebarButton } from "./sidebar-button";
 import { SidebarItems } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { link } from "fs";
 
 interface SidebarDesktopProps {
 
