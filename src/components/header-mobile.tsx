@@ -1,10 +1,10 @@
 'use client';
 
-import React, { ReactNode, useEffect, useRef} from 'react';
+import React, { ReactNode, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SIDENAV_ITEMS } from '@/constants';
-import { motion, useCycle } from 'framer-motion';
+import { motion, useCycle, MotionProps, SVGMotionProps } from 'framer-motion';
 
 const sidebar = {
   open: (height = 1000) => ({
@@ -96,7 +96,7 @@ const MenuToggle = ({ toggle }: { toggle: () => void }) => (
   </button>
 );
 
-const Path = (props: any) => (
+const Path = (props: SVGMotionProps<SVGPathElement>) => (
   <motion.path fill="transparent" strokeWidth="2" stroke="hsl(0, 0%, 18%)" strokeLinecap="round" {...props} />
 );
 
