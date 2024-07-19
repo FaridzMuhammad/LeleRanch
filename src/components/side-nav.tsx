@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // Import Image component from next/image
 import { usePathname } from 'next/navigation';
 
 import { SIDENAV_ITEMS } from '@/constants';
@@ -16,7 +17,7 @@ const SideNav = () => {
           href="/"
           className="flex flex-col items-center justify-center md:justify-start md:px-6 mt-6 w-full"
         >
-          <img src="/logo.png" alt="Lele Ranch Logo" className="h-24 w-24 rounded-full" />
+          <Image src="/logo.png" alt="Lele Ranch Logo" className="h-24 w-24 rounded-full" width={96} height={96} />
           <span className="font-bold text-xl hidden md:flex text-white mt-2">Lele Ranch</span>
         </Link>
 
@@ -32,7 +33,7 @@ const SideNav = () => {
           href="/profile"
           className="flex flex-row items-center space-x-3 p-2 rounded-lg text-white hover:bg-tertiary-color"
         >
-          <img src="/logo.png" alt="Profile" className="h-10 w-10 rounded-full" />
+          <Image src="/logo.png" alt="Profile" className="h-10 w-10 rounded-full" width={40} height={40} />
           <span className="font-semibold text-xl flex">Profile</span>
         </Link>
       </div>

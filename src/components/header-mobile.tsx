@@ -1,19 +1,12 @@
 'use client';
 
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
-
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
 import { SIDENAV_ITEMS } from '@/constants';
 import { SideNavItem } from '@/types';
 import { Icon } from '@iconify/react';
 import { motion, useCycle } from 'framer-motion';
-
-type MenuItemWithSubMenuProps = {
-  item: SideNavItem;
-  toggleOpen: () => void;
-};
 
 const sidebar = {
   open: (height = 1000) => ({
@@ -36,7 +29,7 @@ const sidebar = {
 
 const HeaderMobile = () => {
   const pathname = usePathname();
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { height } = useDimensions(containerRef);
   const [isOpen, toggleOpen] = useCycle(false, true);
 
@@ -45,43 +38,28 @@ const HeaderMobile = () => {
       initial={false}
       animate={isOpen ? 'open' : 'closed'}
       custom={height}
-      className={`fixed inset-0 z-50 w-full md:hidden ${
-        isOpen ? '' : 'pointer-events-none'
-      }`}
+      className={`fixed inset-0 z-50 w-full md:hidden ${isOpen ? '' : 'pointer-events-none'}`}
       ref={containerRef}
     >
-      <motion.div
-        className="absolute inset-0 right-0 w-full bg-white"
-        variants={sidebar}
-      />
+      <motion.div className="absolute inset-0 right-0 w-full bg-white" variants={sidebar} />
       <motion.ul
         variants={variants}
         className="absolute grid w-full gap-3 px-10 py-16 max-h-screen overflow-y-auto"
       >
         {SIDENAV_ITEMS.map((item, idx) => {
-          const isLastItem = idx === SIDENAV_ITEMS.length - 1; // Check if it's the last item
-
+          const isLastItem = idx === SIDENAV_ITEMS.length - 1;
           return (
             <div key={idx}>
-              {item.submenu ? (
-                <MenuItemWithSubMenu item={item} toggleOpen={toggleOpen} />
-              ) : (
-                <MenuItem>
-                  <Link
-                    href={item.path}
-                    onClick={() => toggleOpen()}
-                    className={`flex w-full text-2xl ${
-                      item.path === pathname ? 'font-bold' : ''
-                    }`}
-                  >
-                    {item.title}
-                  </Link>
-                </MenuItem>
-              )}
-
-              {!isLastItem && (
-                <MenuItem className="my-3 h-px w-full bg-gray-300" />
-              )}
+              <MenuItem>
+                <Link
+                  href={item.path}
+                  onClick={() => toggleOpen()}
+                  className={`flex w-full text-2xl ${item.path === pathname ? 'font-bold' : ''}`}
+                >
+                  {item.title}
+                </Link>
+              </MenuItem>
+              {!isLastItem && <MenuItem className="my-3 h-px w-full bg-gray-300" />}
             </div>
           );
         })}
@@ -93,11 +71,8 @@ const HeaderMobile = () => {
 
 export default HeaderMobile;
 
-const MenuToggle = ({ toggle }: { toggle: any }) => (
-  <button
-    onClick={toggle}
-    className="pointer-events-auto absolute right-4 top-[14px] z-30"
-  >
+const MenuToggle = ({ toggle }: { toggle: () => void }) => (
+  <button onClick={toggle} className="pointer-events-auto absolute right-4 top-[14px] z-30">
     <svg width="23" height="23" viewBox="0 0 23 23">
       <Path
         variants={{
@@ -124,77 +99,14 @@ const MenuToggle = ({ toggle }: { toggle: any }) => (
 );
 
 const Path = (props: any) => (
-  <motion.path
-    fill="transparent"
-    strokeWidth="2"
-    stroke="hsl(0, 0%, 18%)"
-    strokeLinecap="round"
-    {...props}
-  />
+  <motion.path fill="transparent" strokeWidth="2" stroke="hsl(0, 0%, 18%)" strokeLinecap="round" {...props} />
 );
 
-const MenuItem = ({
-  className,
-  children,
-}: {
-  className?: string;
-  children?: ReactNode;
-}) => {
+const MenuItem = ({ className, children }: { className?: string; children?: ReactNode }) => {
   return (
     <motion.li variants={MenuItemVariants} className={className}>
       {children}
     </motion.li>
-  );
-};
-
-const MenuItemWithSubMenu: React.FC<MenuItemWithSubMenuProps> = ({
-  item,
-  toggleOpen,
-}) => {
-  const pathname = usePathname();
-  const [subMenuOpen, setSubMenuOpen] = useState(false);
-
-  return (
-    <>
-      <MenuItem>
-        <button
-          className="flex w-full text-2xl"
-          onClick={() => setSubMenuOpen(!subMenuOpen)}
-        >
-          <div className="flex flex-row justify-between w-full items-center">
-            <span
-              className={`${pathname.includes(item.path) ? 'font-bold' : ''}`}
-            >
-              {item.title}
-            </span>
-            <div className={`${subMenuOpen && 'rotate-180'}`}>
-              <Icon icon="lucide:chevron-down" width="24" height="24" />
-            </div>
-          </div>
-        </button>
-      </MenuItem>
-      <div className="mt-2 ml-2 flex flex-col space-y-2">
-        {subMenuOpen && (
-          <>
-            {item.subMenuItems?.map((subItem, subIdx) => {
-              return (
-                <MenuItem key={subIdx}>
-                  <Link
-                    href={subItem.path}
-                    onClick={() => toggleOpen()}
-                    className={` ${
-                      subItem.path === pathname ? 'font-bold' : ''
-                    }`}
-                  >
-                    {subItem.title}
-                  </Link>
-                </MenuItem>
-              );
-            })}
-          </>
-        )}
-      </div>
-    </>
   );
 };
 
@@ -225,7 +137,7 @@ const variants = {
   },
 };
 
-const useDimensions = (ref: any) => {
+const useDimensions = (ref: React.RefObject<HTMLDivElement>) => {
   const dimensions = useRef({ width: 0, height: 0 });
 
   useEffect(() => {
@@ -233,7 +145,6 @@ const useDimensions = (ref: any) => {
       dimensions.current.width = ref.current.offsetWidth;
       dimensions.current.height = ref.current.offsetHeight;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ref]);
 
   return dimensions.current;
