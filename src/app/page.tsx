@@ -1,5 +1,4 @@
 export default function Home() {
-<<<<<<< HEAD
   return (
     <>
       <span className="font-bold text-4xl">Home</span>
@@ -12,12 +11,3 @@ export default function Home() {
     </>
   );
 }
-=======
-    return (
-      <div>
-        <h1 className="text-3xl font-semibold">Home Page</h1>
-      </div>
-    );
-  }
-  
->>>>>>> origin/dev

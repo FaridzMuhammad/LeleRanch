@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "parser": "@typescript-eslint/parser",
   "extends": ["plugin:@typescript-eslint/recommended", "next/core-web-vitals"],
   "plugins": ["unused-imports"],
@@ -16,7 +15,4 @@
       }
     ]
   }
-=======
-  "extends": "next/core-web-vitals"
->>>>>>> origin/dev
 }
