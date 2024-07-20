@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SIDENAV_ITEMS } from '@/constants';
 import { motion, useCycle, SVGMotionProps } from 'framer-motion';
-import Image from 'next/image';
 
 const sidebar = {
   open: (height = 1000) => ({
