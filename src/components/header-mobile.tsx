@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SIDENAV_ITEMS } from '@/constants';
 import { motion, useCycle, SVGMotionProps } from 'framer-motion';
+import Image from 'next/image';
 
 const sidebar = {
   open: (height = 1000) => ({
@@ -40,28 +41,40 @@ const HeaderMobile = () => {
       ref={containerRef}
     >
       <motion.div className="absolute inset-0 right-0 w-full bg-primary-color" variants={sidebar} />
-      <motion.ul
-        variants={variants}
-        className="absolute grid w-full gap-3 px-10 py-16 max-h-screen overflow-y-auto text-white"
-      >
-        {SIDENAV_ITEMS.map((item, idx) => {
-          const isLastItem = idx === SIDENAV_ITEMS.length - 1;
-          return (
-            <div key={idx}>
-              <MenuItem>
-                <Link
-                  href={item.path}
-                  onClick={() => toggleOpen()}
-                  className={`flex w-full text-2xl ${item.path === pathname ? 'font-bold' : ''}`}
-                >
-                  {item.title}
-                </Link>
-              </MenuItem>
-              {!isLastItem && <MenuItem className="my-3 h-px w-full bg-gray-300" />}
-            </div>
-          );
-        })}
-      </motion.ul>
+      <motion.div className="absolute flex flex-col justify-between w-full h-full px-10 py-16 text-white">
+        <motion.ul
+          variants={variants}
+          className="grid gap-3 overflow-y-auto list-none p-0 m-0"
+        >
+          {SIDENAV_ITEMS.map((item, idx) => {
+            const isLastItem = idx === SIDENAV_ITEMS.length - 1;
+            return (
+              <div key={idx}>
+                <MenuItem>
+                  <Link
+                    href={item.path}
+                    onClick={() => toggleOpen()}
+                    className={`flex w-full text-2xl ${item.path === pathname ? 'font-bold' : ''}`}
+                  >
+                    {item.title}
+                  </Link>
+                </MenuItem>
+                {!isLastItem && <MenuItem className="my-3 h-px w-full bg-gray-300" />}
+              </div>
+            );
+          })}
+          <MenuItem className="my-3 h-px w-full bg-gray-300" />
+          <MenuItem>
+            <Link
+              href="/profile"
+              onClick={() => toggleOpen()}
+              className={`flex w-full text-2xl ${"/profile" === pathname ? 'font-bold' : ''}`}
+            >
+              Profile
+            </Link>
+          </MenuItem>
+        </motion.ul>
+      </motion.div>
       <MenuToggle toggle={toggleOpen} />
     </motion.nav>
   );
