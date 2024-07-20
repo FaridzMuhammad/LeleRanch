@@ -18,6 +18,8 @@ const config: Config = {
         'secondary-color': '#1F2937',
         'tertiary-color': '#22D3EE',
         'quaternary-color' : '#014F79',
+        'quinary-color': '#004f79',
+
       }
     },
   },
