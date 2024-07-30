@@ -88,14 +88,14 @@ const JadwalPage = () => {
   return (
     <div className="p-6 bg-primary-color min-h-screen">
       <div className="flex justify-between items-center mb-5">
-        <h1 className="text-4xl font-bold text-white">Jadwal</h1>
+        <h1 className="text-4xl font-bold text-white text-center md:text-left">Jadwal</h1>
         <button onClick={() => openModal()} className="bg-tertiary-color text-white p-2 px-4 rounded-lg flex items-center">
           <span className="mr-2">Add</span>
           <Icon icon="mdi:plus" />
         </button>
       </div>
 
-      <div className="mt-24 bg-secondary-color rounded-lg text-white shadow-md">
+      <div className="mt-24 bg-secondary-color rounded-lg text-white shadow-md overflow-x-auto">
         <table className="w-full text-center">
           <thead>
             <tr>
