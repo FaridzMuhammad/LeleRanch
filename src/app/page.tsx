@@ -11,7 +11,7 @@ export default function Home() {
           <div className="bg-secondary-color py-4 rounded-t-lg flex items-center justify-center h-24 px-2">
             <span className="text-lg break-words whitespace-normal">Pemberian pakan selanjutnya</span>
           </div>
-          <div className="flex-1 p-6 bg-quinary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
+          <div className="flex-1 p-6 bg-tertiary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
             <Icon icon="fluent:clock-bill-16-regular" className="w-12 h-12" />
             <span className="text-2xl font-bold mt-2">Jam 16:00</span>
           </div>
@@ -22,7 +22,7 @@ export default function Home() {
           <div className="bg-secondary-color py-4 rounded-t-lg flex items-center justify-center h-24 px-2">
             <span className="text-lg break-words whitespace-normal">Pakan yang tersedia</span>
           </div>
-          <div className="flex-1 p-6 bg-quinary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
+          <div className="flex-1 p-6 bg-tertiary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
             <Icon icon="mdi:fish-food" className="w-12 h-12" />
             <span className="text-2xl font-bold mt-2">20 Kg</span>
           </div>
@@ -33,7 +33,7 @@ export default function Home() {
           <div className="bg-secondary-color py-4 rounded-t-lg flex items-center justify-center h-24 px-2">
             <span className="text-lg break-words whitespace-normal">Pakan yang sudah diberikan</span>
           </div>
-          <div className="flex-1 p-6 bg-quinary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
+          <div className="flex-1 p-6 bg-tertiary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
             <Icon icon="mdi:fish-food-outline" className="w-12 h-12" />
             <span className="text-2xl font-bold mt-2">10 Kg</span>
           </div>
@@ -51,25 +51,25 @@ export default function Home() {
             </tr>
           </thead>
           <tbody>
-            <tr className="border-t border-quinary-color bg-quinary-color">
+            <tr className="border-t border-tertiary-color bg-tertiary-color">
               <td className="py-4 px-2">22 April 2024</td>
               <td className="py-4 px-2">12:00</td>
               <td className="py-4 px-2">1.5 Kg</td>
               <td className="py-4 px-2">Alat 1</td>
             </tr>
-            <tr className="border-t border-quinary-color bg-primary-color">
+            <tr className="border-t border-tertiary-color bg-primary-color">
               <td className="py-4 px-2">23 April 2024</td>
               <td className="py-4 px-2">14:00</td>
               <td className="py-4 px-2">1.2 Kg</td>
               <td className="py-4 px-2">Alat 2</td>
             </tr>
-            <tr className="border-t border-quinary-color bg-quinary-color">
+            <tr className="border-t border-tertiary-color bg-tertiary-color">
               <td className="py-4 px-2">28 April 2024</td>
               <td className="py-4 px-2">10:00</td>
               <td className="py-4 px-2">2.0 Kg</td>
               <td className="py-4 px-2">Alat 2</td>
             </tr>
-            <tr className="border-t border-quinary-color bg-primary-color">
+            <tr className="border-t border-tertiary-color bg-primary-color">
               <td className="py-4 px-2">30 April 2024</td>
               <td className="py-4 px-2">08:00</td>
               <td className="py-4 px-2">3.2 Kg</td>
