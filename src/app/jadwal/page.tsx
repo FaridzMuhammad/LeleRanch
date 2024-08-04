@@ -131,7 +131,7 @@ const JadwalPage = () => {
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
         contentLabel="Add Schedule"
-        className="bg-gray-800 p-8 rounded-lg shadow-lg w-11/12 max-w-4xl mx-auto my-20"
+        className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-4xl mx-auto my-20"
         overlayClassName="fixed inset-0 flex items-center justify-center"
       >
         <h2 className="text-2xl font-bold text-white mb-4">{isEditing ? 'Edit Schedule' : 'Add Schedule'}</h2>
@@ -143,7 +143,7 @@ const JadwalPage = () => {
               name="tanggal"
               value={newSchedule.tanggal}
               onChange={handleChange}
-              className="w-full p-2 bg-gray-700 text-white border border-gray-600 rounded"
+              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
             />
           </div>
@@ -154,7 +154,7 @@ const JadwalPage = () => {
               name="jam"
               value={newSchedule.jam}
               onChange={handleChange}
-              className="w-full p-2 bg-gray-700 text-white border border-gray-600 rounded"
+              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
             />
           </div>
@@ -165,7 +165,7 @@ const JadwalPage = () => {
               name="jumlahPakan"
               value={newSchedule.jumlahPakan}
               onChange={handleChange}
-              className="w-full p-2 bg-gray-700 text-white border border-gray-600 rounded"
+              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
             />
           </div>
@@ -176,15 +176,15 @@ const JadwalPage = () => {
               name="kolam"
               value={newSchedule.kolam}
               onChange={handleChange}
-              className="w-full p-2 bg-gray-700 text-white border border-gray-600 rounded"
+              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
             />
           </div>
           <div className="flex justify-end space-x-4">
-            <button type="button" onClick={closeModal} className="bg-gray-500 text-white p-2 rounded">
+            <button type="button" onClick={closeModal} className="bg-gray-500 text-white p-2 rounded-lg">
               Cancel
             </button>
-            <button type="submit" className="bg-teal-500 text-white p-2 rounded">
+            <button type="submit" className="bg-tertiary-color text-white p-2 rounded-lg">
               {isEditing ? 'Update' : 'Create'}
             </button>
           </div>
