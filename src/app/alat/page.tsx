@@ -169,7 +169,7 @@ const AlatPage = () => {
         isOpen={deleteModalIsOpen}
         onRequestClose={closeDeleteModal}
         contentLabel="Delete Alat"
-        className="bg-gray-800 p-8 rounded-lg shadow-lg w-11/12 max-w-md mx-auto my-20"
+        className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-md mx-auto my-20"
         overlayClassName="fixed inset-0 flex items-center justify-center"
       >
         <h2 className="text-2xl font-bold text-white mb-4">Delete Alat</h2>

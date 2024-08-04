@@ -19,13 +19,13 @@ const LaporanPage = () => {
   const [reportData, setReportData] = useState([
     {
       tanggal: '26 April 2024',
-      totalPemberianPakan: 5,
+      totalPemberianPakan: '5',
       jumlahPakan: '4.5 Kg',
       catatan: 'Hari ini ....',
     },
     {
       tanggal: '26 April 2024',
-      totalPemberianPakan: 6,
+      totalPemberianPakan: '6',
       jumlahPakan: '5.0 Kg',
       catatan: 'Hari ini ....',
     },
@@ -198,7 +198,7 @@ const LaporanPage = () => {
         isOpen={deleteModalIsOpen}
         onRequestClose={closeDeleteModal}
         contentLabel="Delete Report"
-        className="bg-gray-800 p-8 rounded-lg shadow-lg w-11/12 max-w-md mx-auto my-20"
+        className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-md mx-auto my-20"
         overlayClassName="fixed inset-0 flex items-center justify-center"
       >
         <h2 className="text-2xl font-bold text-white mb-4">Delete Report</h2>
