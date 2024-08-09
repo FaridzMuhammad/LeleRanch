@@ -158,7 +158,7 @@ const LaporanPage = () => {
               name="totalPemberianPakan"
               value={newReport.totalPemberianPakan}
               onChange={handleChange}
-              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
+              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg "
               required
             />
           </div>

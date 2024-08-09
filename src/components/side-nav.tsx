@@ -42,9 +42,8 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
   return (
     <Link
       href={item.path}
-      className={`flex flex-row space-x-4 items-center p-2 rounded-lg ${
-        item.path === pathname ? 'bg-tertiary-color rounded-xl' : ''
-      } text-white hover:bg-tertiary-color hover:rounded-xl`}
+      className={`flex flex-row space-x-4 items-center p-2 rounded-lg ${item.path === pathname ? 'bg-tertiary-color rounded-xl' : ''
+        } text-white hover:bg-tertiary-color hover:rounded-xl`}
     >
       {item.icon}
       <span className="font-semibold text-xl flex">{item.title}</span>
