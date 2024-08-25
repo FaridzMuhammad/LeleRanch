@@ -1,82 +1,68 @@
-import { Icon } from '@iconify/react';
+"use client";
 
-export default function Home() {
+import React, { useState } from 'react';
+
+export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://127.0.0.1:83/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+
+      if (response.ok) {
+        // Simpan token di localStorage atau state management yang Anda gunakan
+        localStorage.setItem('token', data.token);
+        alert('Login berhasil!');
+        window.location.href = '/dashboard';
+      } else {
+        setErrorMessage(data.message);
+      }
+    } catch (error) {
+      setErrorMessage('Terjadi kesalahan pada server');
+    }
+  };
+
   return (
-    <div className="p-6 bg-primary-color min-h-screen">
-      <span className="font-bold text-4xl text-white block text-center md:text-left">Dashboard</span>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-12">
-        {/* Box 1 */}
-        <div className="flex flex-col bg-primary-color rounded-lg text-center text-white p-4 h-full">
-          <div className="bg-secondary-color py-4 rounded-t-lg flex items-center justify-center h-24 px-2">
-            <span className="text-lg break-words whitespace-normal">Pemberian pakan selanjutnya</span>
+    <div className="flex justify-center items-center min-h-screen bg-primary-color">
+      <div className="bg-secondary-color p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h1 className="text-3xl text-white font-bold mb-6 text-center">Login</h1>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-white mb-2">Email</label>
+            <input
+              type="email"
+              className="w-full p-3 bg-primary-color rounded-lg text-white"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
-          <div className="flex-1 p-6 bg-tertiary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
-            <Icon icon="fluent:clock-bill-16-regular" className="w-12 h-12" />
-            <span className="text-2xl font-bold mt-2">Jam 16:00</span>
+          <div className="mb-6">
+            <label className="block text-white mb-2">Password</label>
+            <input
+              type="password"
+              className="w-full p-3 bg-primary-color rounded-lg text-white"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
-        </div>
-
-        {/* Box 2 */}
-        <div className="flex flex-col bg-primary-color rounded-lg text-center text-white p-4 h-full">
-          <div className="bg-secondary-color py-4 rounded-t-lg flex items-center justify-center h-24 px-2">
-            <span className="text-lg break-words whitespace-normal">Pakan yang tersedia</span>
-          </div>
-          <div className="flex-1 p-6 bg-tertiary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
-            <Icon icon="mdi:fish-food" className="w-12 h-12" />
-            <span className="text-2xl font-bold mt-2">20 Kg</span>
-          </div>
-        </div>
-
-        {/* Box 3 */}
-        <div className="flex flex-col bg-primary-color rounded-lg text-center text-white p-4 h-full">
-          <div className="bg-secondary-color py-4 rounded-t-lg flex items-center justify-center h-24 px-2">
-            <span className="text-lg break-words whitespace-normal">Pakan yang sudah diberikan</span>
-          </div>
-          <div className="flex-1 p-6 bg-tertiary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
-            <Icon icon="mdi:fish-food-outline" className="w-12 h-12" />
-            <span className="text-2xl font-bold mt-2">10 Kg</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-secondary-color rounded-lg text-white shadow-md mt-20 overflow-x-auto">
-        <table className="w-full text-center">
-          <thead>
-            <tr>
-              <th className="py-4 px-2">Tanggal</th>
-              <th className="py-4 px-2">Jam</th>
-              <th className="py-4 px-2">Pakan</th>
-              <th className="py-4 px-2">Alat</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-t border-tertiary-color bg-tertiary-color">
-              <td className="py-4 px-2">22 April 2024</td>
-              <td className="py-4 px-2">12:00</td>
-              <td className="py-4 px-2">1.5 Kg</td>
-              <td className="py-4 px-2">Alat 1</td>
-            </tr>
-            <tr className="border-t border-tertiary-color bg-primary-color">
-              <td className="py-4 px-2">23 April 2024</td>
-              <td className="py-4 px-2">14:00</td>
-              <td className="py-4 px-2">1.2 Kg</td>
-              <td className="py-4 px-2">Alat 2</td>
-            </tr>
-            <tr className="border-t border-tertiary-color bg-tertiary-color">
-              <td className="py-4 px-2">28 April 2024</td>
-              <td className="py-4 px-2">10:00</td>
-              <td className="py-4 px-2">2.0 Kg</td>
-              <td className="py-4 px-2">Alat 2</td>
-            </tr>
-            <tr className="border-t border-tertiary-color bg-primary-color">
-              <td className="py-4 px-2">30 April 2024</td>
-              <td className="py-4 px-2">08:00</td>
-              <td className="py-4 px-2">3.2 Kg</td>
-              <td className="py-4 px-2">Alat 3</td>
-            </tr>
-          </tbody>
-        </table>
+          {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
+          <button type="submit" className="w-full py-3 bg-tertiary-color rounded-lg text-white font-bold hover:opacity-50">
+            Login
+          </button>
+        </form>
       </div>
     </div>
   );

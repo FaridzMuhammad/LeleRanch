@@ -1,5 +1,3 @@
-import '../styles/globals.css';
-
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
@@ -24,16 +22,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`bg-primary-color ${inter.className}`}>
-        {/* <div className="flex">
+        <div className="flex">
           <SideNav />
           <main className="flex-1">
             <MarginWidthWrapper>
               <Header />
-              <HeaderMobile /> */}
-              {children}
-            {/* </MarginWidthWrapper>
+              <HeaderMobile />
+              <PageWrapper>{children}</PageWrapper>
+            </MarginWidthWrapper>
           </main>
-        </div> */}
+        </div>
       </body>
     </html>
   );
