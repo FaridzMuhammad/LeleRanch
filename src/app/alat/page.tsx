@@ -1,86 +1,151 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import Modal from 'react-modal';
+import axios, { all } from 'axios';
+import { useAlat } from '@/hooks/useFetchAlat';
 
-const AlatPage = () => {
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentScheduleIndex, setCurrentScheduleIndex] = useState<number | null>(null);
-  const [newSchedule, setNewSchedule] = useState({
-    namaAlat: '',
-    kolam: '',
+// Membuat instance Axios dengan baseURL
+const axiosInstance = axios.create({
+  baseURL: 'http://localhost:83/api/', // Sesuaikan dengan URL backend Anda
+});
+
+// Menambahkan token ke setiap request secara otomatis
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+const AlatPage: React.FC = () => {
+  const [modal, setModal] = useState({
+    modalIsOpen: false,
+    isEditing: false,
+    deleteModalIsOpen: false,
+  });
+  const { modalIsOpen, isEditing, deleteModalIsOpen } = modal;
+  const [currentSensorId, setCurrentSensorId] = useState<number | null>(null);
+  const [newSensor, setNewSensor] = useState({
+    code: '',
+    branch_id: '',
+    latitude: '',
+    longitude: '',
+    isOn: true,
+    user_id: '',
   });
 
-  const [scheduleData, setScheduleData] = useState([
-    {
-      id: '01',
-      namaAlat: 'Alat 1',
-      kolam: 'Kolam Lele Utara',
-    },
-    {
-      id: '02',
-      namaAlat: 'Alat 2',
-      kolam: 'Kolam Lele Barat',
-    },
-  ]);
+  interface Sensor {
+    id: number;
+    code: string;
+    branch_id: string;
+    latitude: string;
+    longitude: string;
+    isOn: boolean;
+    user_id: number;
+  }
 
-  const openModal = (index: number | null = null) => {
-    if (index !== null) {
-      setIsEditing(true);
-      setCurrentScheduleIndex(index);
-      setNewSchedule({
-        namaAlat: scheduleData[index].namaAlat,
-        kolam: scheduleData[index].kolam,
-      });
+  const branchId = localStorage.getItem('branch_id');
+  const userId = localStorage.getItem('user_id');
+  const { alatData, submitAlat, updateAlat, deleteAlat } = useAlat(branchId);
+  console.log('alatData', alatData);
+  console.log('user', userId);
+
+  const openModal = (sensor: Sensor | null = null) => {
+    setModal({ ...modal, isEditing: true });
+    if (sensor) {
+      setCurrentSensorId(sensor.id);
+      console.log('sensor', sensor);
+      const sanitizedValue =
+      {
+        user_id: userId || '',
+      };
+      const newSensor = {
+        code: sensor.code,
+        branch_id: sensor.branch_id,
+        latitude: sensor.latitude,
+        longitude: sensor.longitude,
+        isOn: sensor.isOn,
+        user_id: sanitizedValue.user_id,
+      };
+      setNewSensor(newSensor);
+      console.log('newSensor', newSensor);
+      const updateSensor = { ...modal, isEditing: true, modalIsOpen: true };
+      setModal(updateSensor);
     } else {
-      setIsEditing(false);
-      setNewSchedule({
-        namaAlat: '',
-        kolam: '',
+      if (!userId || !branchId) {
+        alert('User ID or Branch ID not found');
+        return;
+      }
+      setModal({ ...modal, isEditing: false });
+      setNewSensor({
+        code: '',
+        branch_id: branchId,
+        latitude: '',
+        longitude: '',
+        isOn: false,
+        user_id: userId,
       });
+      const updateSensor = { ...modal, isEditing: false, modalIsOpen: true };
+      setModal(updateSensor);
     }
-    setModalIsOpen(true);
   };
 
   const closeModal = () => {
-    setModalIsOpen(false);
+    setModal({ ...modal, modalIsOpen: false });
   };
 
-  const openDeleteModal = (index: number) => {
-    setCurrentScheduleIndex(index);
-    setDeleteModalIsOpen(true);
+  const openDeleteModal = (id: number) => {
+    setCurrentSensorId(id);
+    setModal({ ...modal, deleteModalIsOpen: true });
   };
 
   const closeDeleteModal = () => {
-    setDeleteModalIsOpen(false);
+    setModal({ ...modal, deleteModalIsOpen: false });
   };
 
-  const handleDelete = () => {
-    if (currentScheduleIndex !== null) {
-      const updatedScheduleData = scheduleData.filter((_, index) => index !== currentScheduleIndex);
-      setScheduleData(updatedScheduleData);
+  // Handle deleting a sensor
+  const handleDelete = async () => {
+    if (currentSensorId !== null) {
+      try {
+        await deleteAlat(currentSensorId);
+      } catch (error) {
+        console.error('Error deleting sensor:', error);
+      }
     }
     closeDeleteModal();
   };
 
+  // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewSchedule({ ...newSchedule, [e.target.name]: e.target.value });
+    setNewSensor({ ...newSensor, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // Handle form submission (Create/Update)
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isEditing && currentScheduleIndex !== null) {
-      const updatedScheduleData = [...scheduleData];
-      updatedScheduleData[currentScheduleIndex] = { ...updatedScheduleData[currentScheduleIndex], ...newSchedule };
-      setScheduleData(updatedScheduleData);
-    } else {
-      const newId = (scheduleData.length + 1).toString().padStart(2, '0');
-      setScheduleData([...scheduleData, { id: newId, ...newSchedule }]);
+
+    if (!newSensor.user_id) {
+      alert('User ID not found');
+      return;
     }
-    closeModal();
+
+    try {
+      if (isEditing && currentSensorId !== null) {
+        await updateAlat(currentSensorId, newSensor);
+      } else {
+        await submitAlat(newSensor);
+        console.log('newSensor', newSensor);
+      }
+      closeModal();
+    } catch (error) {
+      console.error('Error submitting sensor:', error);
+    }
   };
 
   return (
@@ -97,61 +162,109 @@ const AlatPage = () => {
         <table className="w-full text-center">
           <thead>
             <tr>
-              <th className="py-4 px-2">Id</th>
-              <th className="py-4 px-2">Nama Alat</th>
-              <th className="py-4 px-2">Kolam</th>
+              <th className="py-4 px-2">ID</th>
+              <th className="py-4 px-2">Code</th>
+              <th className="py-4 px-2">Branch ID</th>
+              <th className="py-4 px-2">Latitude</th>
+              <th className="py-4 px-2">Longitude</th>
+              <th className="py-4 px-2">Is On</th>
               <th className="py-4 px-2">Action</th>
             </tr>
           </thead>
           <tbody>
-            {scheduleData.map((item, index) => (
-              <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? 'bg-tertiary-color' : 'bg-primary-color'}`}>
-                <td className="py-4 px-2">{item.id}</td>
-                <td className="py-4 px-2">{item.namaAlat}</td>
-                <td className="py-4 px-2">{item.kolam}</td>
-                <td className="py-4 px-2 flex justify-center space-x-2">
-                  <button className="text-white" onClick={() => openModal(index)}>
-                    <Icon icon="mdi:pencil" className="w-6 h-6" />
-                  </button>
-                  <button className="text-red-700" onClick={() => openDeleteModal(index)}>
-                    <Icon icon="mdi:delete" className="w-6 h-6" />
-                  </button>
+            {alatData && alatData?.length > 0 ? (
+              alatData.map((item: any, index) => (
+                <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? 'bg-tertiary-color' : 'bg-primary-color'}`}>
+                  <td className="py-4 px-2">{item?.id || 'No ID'}</td>
+                  <td className="py-4 px-2">{item?.code || 'No Code'}</td>
+                  <td className="py-4 px-2">{item?.branch_id || 'No Branch'}</td>
+                  <td className="py-4 px-2">{item?.latitude || 'No Latitude'}</td>
+                  <td className="py-4 px-2">{item?.longitude || 'No Longitude'}</td>
+                  <td className="py-4 px-2">{item?.isOn ? 'Yes' : 'No'}</td>
+                  <td className="py-4 px-2 flex justify-center space-x-2">
+                    <button className="text-white" onClick={() => openModal(item)}>
+                      <Icon icon="mdi:pencil" className="w-6 h-6" />
+                    </button>
+                    <button className="text-red-700" onClick={() => openDeleteModal(item?.id)}>
+                      <Icon icon="mdi:delete" className="w-6 h-6" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={7} className="py-4 px-2 text-center">
+                  No data available
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
 
+      {/* Create/Edit Modal */}
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
-        contentLabel="Add Alat"
+        contentLabel="Add or Edit Sensor"
         className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-4xl mx-auto my-20"
         overlayClassName="fixed inset-0 flex items-center justify-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-4">{isEditing ? 'Edit Alat' : 'Add Alat'}</h2>
+        <h2 className="text-2xl font-bold text-white mb-4">{isEditing ? 'Edit Sensor' : 'Add Sensor'}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-white mb-2">Nama Alat</label>
+            <label className="block text-white mb-2">Code</label>
             <input
               type="text"
-              name="namaAlat"
-              value={newSchedule.namaAlat}
+              name="code"
+              value={newSensor?.code}
               onChange={handleChange}
               className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-white mb-2">Kolam</label>
+            <label className="block text-white mb-2">Branch ID</label>
             <input
-              type="text"
-              name="kolam"
-              value={newSchedule.kolam}
+              type="number"
+              name="branch_id"
+              value={newSensor?.branch_id}
               onChange={handleChange}
               className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-white mb-2">Latitude</label>
+            <input
+              type="number"
+              step="0.000001"
+              name="latitude"
+              value={newSensor?.latitude}
+              onChange={handleChange}
+              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-white mb-2">Longitude</label>
+            <input
+              type="number"
+              step="0.000001"
+              name="longitude"
+              value={newSensor?.longitude}
+              onChange={handleChange}
+              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-white mb-2">Is On</label>
+            <input
+              type="checkbox"
+              name="isOn"
+              checked={newSensor?.isOn}
+              onChange={(e) => setNewSensor({ ...newSensor, isOn: e.target.checked })}
             />
           </div>
           <div className="flex justify-end space-x-4">
@@ -165,15 +278,16 @@ const AlatPage = () => {
         </form>
       </Modal>
 
+      {/* Delete Confirmation Modal */}
       <Modal
         isOpen={deleteModalIsOpen}
         onRequestClose={closeDeleteModal}
-        contentLabel="Delete Alat"
+        contentLabel="Delete Sensor"
         className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-md mx-auto my-20"
         overlayClassName="fixed inset-0 flex items-center justify-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-4">Delete Alat</h2>
-        <p className="text-white mb-4">Are you sure you want to delete this alat?</p>
+        <h2 className="text-2xl font-bold text-white mb-4">Delete Sensor</h2>
+        <p className="text-white mb-4">Are you sure you want to delete this sensor?</p>
         <div className="flex justify-end space-x-4">
           <button onClick={closeDeleteModal} className="bg-gray-500 text-white p-2 rounded">
             Cancel

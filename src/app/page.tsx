@@ -1,35 +1,65 @@
 "use client";
 
 import React, { useState } from 'react';
+import {jwtDecode} from 'jwt-decode'; // Ensure jwt-decode is properly installed
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     try {
-      const response = await fetch('http://127.0.0.1:83/api/login', {
+      const response = await fetch('http://localhost:83/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
       });
-      
+
       const data = await response.json();
+      console.log("Login Response: ", data); // Add logging to check if the response contains user data
 
       if (response.ok) {
-        // Simpan token di localStorage atau state management yang Anda gunakan
+        // Save token in localStorage
         localStorage.setItem('token', data.token);
-        alert('Login berhasil!');
-        window.location.href = '/dashboard';
+
+        // Make sure branch_id and user_id are properly saved
+        if (data.user && data.user.branch_id && data.user.id) {
+          localStorage.setItem("branch_id", data.user.branch_id.toString());
+          localStorage.setItem("user_id", data.user.id.toString()); // Corrected to store user_id
+        } else {
+          setErrorMessage("Branch ID or User ID missing from response");
+          return;
+        }
+
+        // Decode token to get expiration time
+        const decodedToken: any = jwtDecode(data.token); // Decode the token to extract expiration
+        const expirationTime = decodedToken.exp * 1000; // Convert to milliseconds
+        localStorage.setItem('tokenExpiration', expirationTime.toString());
+
+        // Set a timer to automatically log out when the token expires
+        setTimeout(() => {
+          alert('Token has expired. Please log in again.');
+          localStorage.removeItem('token');
+          localStorage.removeItem('tokenExpiration');
+          window.location.href = '/login';
+        }, expirationTime - Date.now()); // Auto logout when token expires
+
+        // Redirect to dashboard or another page
+        alert('Login successful!');
+        window.location.href = '/dashboard'; // Change to your correct route
       } else {
-        setErrorMessage(data.message);
+        // Display error message if login fails
+        setErrorMessage(data.message || 'Login failed. Please check your credentials.');
       }
     } catch (error) {
-      setErrorMessage('Terjadi kesalahan pada server');
+      // Handle server errors
+      setErrorMessage('Server error occurred');
+      console.error('Error:', error);
     }
   };
 
@@ -59,7 +89,10 @@ export default function Login() {
             />
           </div>
           {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
-          <button type="submit" className="w-full py-3 bg-tertiary-color rounded-lg text-white font-bold hover:opacity-50">
+          <button
+            type="submit"
+            className="w-full py-3 bg-tertiary-color rounded-lg text-white font-bold hover:opacity-50"
+          >
             Login
           </button>
         </form>
