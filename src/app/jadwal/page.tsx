@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, FC } from "react";
-import { Icon } from "@iconify/react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useSchedule } from "@/hooks/useFetchSchedule";
 import { useAlat } from "@/hooks/useFetchAlat";
-import next from "next";
+import { Icon } from "@iconify/react";
 
 
 const axiosInstance = axios.create({

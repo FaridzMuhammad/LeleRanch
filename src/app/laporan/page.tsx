@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Icon } from "@iconify/react";
+import React, { useState } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useAlat } from "@/hooks/useFetchAlat";
 import { useLaporan } from "@/hooks/useFetchLaporan";
+import { Icon } from "@iconify/react";
 
 // Membuat instance Axios dengan baseURL
 const axiosInstance = axios.create({
