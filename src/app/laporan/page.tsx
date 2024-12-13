@@ -9,7 +9,7 @@ import { useLaporan } from "@/hooks/useFetchLaporan";
 
 // Membuat instance Axios dengan baseURL
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:83/api/", // Sesuaikan dengan URL backend Anda
+  baseURL: "http://103.127.138.198:8080/api/", // Sesuaikan dengan URL backend Anda
 });
 
 // Menambahkan token ke setiap request secara otomatis
@@ -231,22 +231,22 @@ const LaporanPage = () => {
             </tr>
           </thead>
           <tbody>
-            {laporanData.length > 0 ? (
+            {laporanData && laporanData.length > 0 ? (
               laporanData.map((item: any, index) => (
                 <tr
                   key={index}
                   className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}
                 >
-                  <td className="py-4 px-2">{new Date(item.date).toLocaleDateString()}</td>
+                  <td className="py-4 px-2">{new Date(item?.date).toLocaleDateString()}</td>
                   <td className="py-4 px-2">{item.user?.name || "No User"}</td>
                   <td className="py-4 px-2">{item.sensor?.code || "No Sensor"}</td>
                   <td className="py-4 px-2">{item.branch?.name || "No Branch"}</td>
-                  <td className="py-4 px-2">{item.description || "No Catatan"}</td> {/* Menampilkan description sebagai catatan */}
+                  <td className="py-4 px-2">{item?.description || "No Catatan"}</td> {/* Menampilkan description sebagai catatan */}
                   <td className="py-4 px-2 flex justify-center space-x-2">
                     <button className="text-white" onClick={() => openModal(item)}>
                       <Icon icon="mdi:pencil" className="w-6 h-6" />
                     </button>
-                    <button className="text-red-700" onClick={() => openDeleteModal(item.id)}>
+                    <button className="text-red-700" onClick={() => openDeleteModal(item?.id)}>
                       <Icon icon="mdi:delete" className="w-6 h-6" />
                     </button>
                   </td>
@@ -295,17 +295,6 @@ const LaporanPage = () => {
               required
             />
           </div>
-          {/* <div className="mb-4">
-            <label className="block text-white mb-2">Sensor ID</label>
-            <input
-              type="number"
-              name="sensor_id"
-              value={newReport.sensor_id}
-              onChange={handleChange}
-              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
-              required
-            />
-          </div> */}
           <div className="mb-4">
             <label className="block text-white mb-2">Sensor ID</label>
             <select

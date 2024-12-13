@@ -1,5 +1,5 @@
-import { apiGet,apiPost, apiPut, apiDelete } from "@/api/apiService";
-
+// hooks/useFetchAlat.ts
+import { apiGet, apiPost, apiPut, apiDelete } from "@/api/apiService";
 import { useCallback, useEffect, useState } from "react";
 
 interface Alat { 
@@ -18,6 +18,7 @@ interface UseAlatReturn {
     submitAlat: (newAlat: Omit<Alat, "id">) => Promise<void>;
     updateAlat: (id: number, updatedAlat: Partial<Alat>) => Promise<void>;
     deleteAlat: (id: number) => Promise<void>;
+    refetch: () => Promise<void>; // Menambahkan refetch
 }
 
 export const useAlat = (branchId: any): UseAlatReturn => {
@@ -31,6 +32,7 @@ export const useAlat = (branchId: any): UseAlatReturn => {
             const response = await apiGet(`/sensors/branch/${branchId}`);
             console.log("response", response);
             setAlatData(response);
+            setError(null);
         } catch (error) {
             setError(error);
         } finally {
@@ -40,40 +42,37 @@ export const useAlat = (branchId: any): UseAlatReturn => {
 
     const submitAlat = useCallback(async (newAlat: Omit<Alat, "id">) => {
         try {
-            const response = await apiPost(`/sensor`, newAlat);
-            setAlatData((prevData) => [...prevData, response.data]);
+            await apiPost(`/sensor`, newAlat);
+            await fetchData(); // Memanggil refetch setelah submit
         } catch (error) {
             setError(error);
-            console.error("Error submitting schedule:", error);
+            console.error("Error submitting alat:", error);
         }
-    }, []);
+    }, [fetchData]);
 
     const updateAlat = useCallback(async (id: number, updatedAlat: Partial<Alat>) => {
         try {
-            const response = await apiPut(`/sensor/${id}`, updatedAlat);
-            setAlatData((prevData) =>
-                prevData.map((alat) => (alat.id === id ? response.data : alat))
-            );
-            console.log("response", response);
+            await apiPut(`/sensor/${id}`, updatedAlat);
+            await fetchData(); // Memanggil refetch setelah update
         } catch (error) {
             setError(error);
-            console.error("Error updating schedule:", error);
+            console.error("Error updating alat:", error);
         }
-    }, []);
+    }, [fetchData]);
 
     const deleteAlat = useCallback(async (id: number) => {
         try {
             await apiDelete(`/sensor/${id}`);
-            setAlatData((prevData) => prevData.filter((alat) => alat.id !== id));
+            await fetchData(); // Memanggil refetch setelah delete
         } catch (error) {
             setError(error);
-            console.error("Error deleting schedule:", error);
+            console.error("Error deleting alat:", error);
         }
-    }, []);
+    }, [fetchData]);
 
     useEffect(() => {
         fetchData();
     }, [fetchData]);
 
-    return { alatData, loading, error, submitAlat, updateAlat, deleteAlat };
+    return { alatData, loading, error, submitAlat, updateAlat, deleteAlat, refetch: fetchData };
 }

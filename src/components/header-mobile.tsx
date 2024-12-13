@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SIDENAV_ITEMS } from '@/constants';
 import { motion, useCycle, SVGMotionProps } from 'framer-motion';
+import { LogOut } from 'lucide-react';
 
 const sidebar = {
   open: (height = 1000) => ({
@@ -30,6 +31,15 @@ const HeaderMobile = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { height } = useDimensions(containerRef);
   const [isOpen, toggleOpen] = useCycle(false, true);
+
+  const handleLogout = () => {
+    // Hapus token atau sesi pengguna dari localStorage/sessionStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('branch_id');
+    // Redirection setelah logout
+    window.location.href = '/login'; // atau Anda bisa menggunakan Next.js router untuk redirect
+  };
 
   return (
     <motion.nav
@@ -62,15 +72,17 @@ const HeaderMobile = () => {
               </div>
             );
           })}
+          {/* Menambahkan menu logout */}
           <MenuItem className="my-3 h-px w-full bg-gray-300" />
           <MenuItem>
-            <Link
-              href="/profile"
-              onClick={() => toggleOpen()}
-              className={`flex w-full text-2xl ${"/profile" === pathname ? 'font-bold' : ''}`}
+            <button
+              onClick={handleLogout}
+              className="flex w-full text-2xl font-bold text-red-500"
             >
-              Profile
-            </Link>
+              Logout  
+              <LogOut className="h-6 w-6 ml-2" />
+            </button>
+
           </MenuItem>
         </motion.ul>
       </motion.div>

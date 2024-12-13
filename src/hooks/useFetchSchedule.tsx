@@ -30,7 +30,7 @@ export const useSchedule = (branchId: any): UseScheduleReturn => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await apiGet(`/foodfish/branch/${branchId}`);
+      const response = await apiGet(`/foodfish`);
       console.log("response", response); 
       setScheduleData(response);
     } catch (error) {

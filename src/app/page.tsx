@@ -12,7 +12,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:83/api/login', {
+      const response = await fetch('http://103.127.138.198:8080/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

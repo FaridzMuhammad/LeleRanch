@@ -6,10 +6,11 @@ import Modal from "react-modal";
 import axios from "axios";
 import { useSchedule } from "@/hooks/useFetchSchedule";
 import { useAlat } from "@/hooks/useFetchAlat";
+import next from "next";
 
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:83/api/",
+  baseURL: "http://103.127.138.198:8080/api/",
 });
 
 
@@ -59,9 +60,13 @@ const JadwalPage: React.FC = () => {
   }
 
   const branchId = localStorage.getItem("branch_id");
-  const {scheduleData, deleteSchedule, submitSchedule, updateSchedule } = useSchedule(branchId);
+  const { scheduleData, deleteSchedule, submitSchedule, updateSchedule } = useSchedule(branchId);
   const { alatData } = useAlat(branchId);
   const userId = localStorage.getItem("user_id");
+  const [nextFeeding, setNextFeeding] = useState<Date | null>(null);
+  const [totalFeedingGiven, setTotalFeedingGiven] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(7);
 
   const openModal = (schedule: Schedule | null = null) => {
     setModal({ ...modal, isEditing: true })
@@ -127,6 +132,39 @@ const JadwalPage: React.FC = () => {
     closeDeleteModal();
   };
 
+  const generateTimeSlots = () => {
+    const slots = [];
+    const now = new Date();
+
+    for (let i = 0; i < 4; i++) {
+      const startTime = new Date(now);
+      startTime.setHours(now.getHours() + (i * 6));
+
+      const endTime = new Date(startTime);
+      endTime.setHours(startTime.getHours() + 6);
+
+      slots.push({
+        start: startTime.toISOString().slice(0, 16), // Format: YYYY-MM-DDTHH:mm
+        end: endTime.toISOString().slice(0, 16)
+      });
+    }
+    return slots;
+  };
+
+  // Tambahkan state untuk menyimpan time slots
+  const [timeSlots, setTimeSlots] = useState(generateTimeSlots());
+
+  // Function untuk set waktu otomatis
+  const setNextTimeSlot = () => {
+    const slots = generateTimeSlots();
+    setNewSchedule(prev => ({
+      ...prev,
+      onStart: slots[0].start,
+      onEnd: slots[0].end
+    }));
+  };
+
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     console.log(e.target.name, e.target.value);
     setNewSchedule({ ...newSchedule, [e.target.name]: e.target.value });
@@ -176,6 +214,53 @@ const JadwalPage: React.FC = () => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  const calculateNextFeeding = (lastFeeding: string) => {
+    const lastDate = new Date(lastFeeding);
+    const nextDate = new Date(lastDate);
+    nextDate.setHours(lastDate.getHours() + 6);
+    return nextDate;
+  };
+
+  useEffect(() => {
+    if (scheduleData && scheduleData.length > 0) {
+      const reversedData = scheduleData.reverse();
+      const lastFeeding = reversedData[0];
+      const nextFeeding = calculateNextFeeding(lastFeeding.onStart);
+      setNextFeeding(nextFeeding);
+
+      const totalFeeding = reversedData.reduce((acc, item) => acc + Number(item.weight || 0), 0);
+      setTotalFeedingGiven(totalFeeding);
+    }
+
+  }, [scheduleData]);
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+  const currentItems = scheduleData ? [...scheduleData].reverse().slice(indexOfFirstItem, indexOfLastItem) : [];
+  const totalPages = Math.ceil(scheduleData.length / itemsPerPage);
+
+  const pageRange = 2;
+  const startPage = Math.max(currentPage - pageRange, 1);
+  const endPage = Math.min(currentPage + pageRange, totalPages);
+
+  const pagesToShow = [];
+  for (let i = startPage; i <= endPage; i++) {
+    pagesToShow.push(i);
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(currentPage + 1);
+  }
+
+  const handlePrevPage = () => {
+    setCurrentPage(currentPage - 1);
+  }
+
   return (
     <div className="p-6 bg-primary-color min-h-screen">
       <div className="flex justify-between items-center mb-5">
@@ -191,52 +276,77 @@ const JadwalPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="mt-24 bg-secondary-color rounded-lg text-white shadow-md overflow-x-auto">
+      <div className="bg-secondary-color rounded-lg text-white shadow-md mt-20 overflow-x-auto">
         <table className="w-full text-center">
           <thead>
             <tr>
-              <th className="py-4 px-2">Description</th>
-              <th className="py-4 px-2">Weight</th>
+              <th className="py-4 px-2">Deskripsi</th>
+              <th className="py-4 px-2">Berat</th>
               <th className="py-4 px-2">Sensor ID</th>
-              <th className="py-4 px-2">Date Start</th>
-              <th className="py-4 px-2">Time Start</th>
-              <th className="py-4 px-2">Date End</th>
-              <th className="py-4 px-2">Time End</th>
+              <th className="py-4 px-2">Tanggal Mulai</th>
+              <th className="py-4 px-2">Waktu Mulai</th>
               <th className="py-4 px-2">Action</th>
             </tr>
           </thead>
           <tbody>
-            {scheduleData?.map((item, index) => (
-              <tr
-                key={index}
-                className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"
-                  }`}
-              >
-                <td className="py-4 px-2">{item?.description}</td>
-                <td className="py-4 px-2">{item?.weight}</td>
-                <td className="py-4 px-2">{item?.sensor_id}</td>
-                <td className="py-4 px-2">{formatDate(item?.onStart)}</td>
-                <td className="py-4 px-2">{formatTime(item?.onStart)}</td>
-                <td className="py-4 px-2">{formatDate(item?.onEnd)}</td>
-                <td className="py-4 px-2">{formatTime(item?.onEnd)}</td>
-                <td className="py-4 px-2 flex justify-center space-x-2">
-                  <button
-                    className="text-white"
-                    onClick={() => openModal(item)}
-                  >
-                    <Icon icon="mdi:pencil" className="w-6 h-6" />
-                  </button>
-                  <button
-                    className="text-red-700"
-                    onClick={() => openDeleteModal(item?.id)}
-                  >
-                    <Icon icon="mdi:delete" className="w-6 h-6" />
-                  </button>
+            {currentItems.length > 0 ? (
+              currentItems?.map((item, index) => (
+                <tr key={index}
+                  className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}>
+                  <td className="py-4 px-2">{item?.description}</td>
+                  <td className="py-4 px-2">{item?.weight}</td>
+                  <td className="py-4 px-2">{item?.sensor_id}</td>
+                  <td className="py-4 px-2">{formatDate(item?.onStart)}</td>
+                  <td className="py-4 px-2">{formatTime(item?.onStart)}</td>
+                  <td className="py-4 px-2 flex justify-center space-x-2">
+                    <button className="text-white" onClick={() => openModal(item)}>
+                      <Icon icon="mdi:pencil" className="w-6 h-6" />
+                    </button>
+                    <button className="text-red-700" onClick={() => openDeleteModal(item?.id)}>
+                      <Icon icon="mdi:delete" className="w-6 h-6" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={6} className="py-4 px-2 text-center">
+                  No reports available
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
+
+        {/* Pagination Links */}
+        <div className="flex justify-end py-4 space-x-2 px-4">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-md ${currentPage === 1 ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"
+              }`}
+          >
+            <Icon icon="akar-icons:chevron-left" className="w-5 h-5" />
+          </button>
+          {pagesToShow.map((page) => (
+            <button
+              key={page}
+              className={`px-4 py-2 rounded-md ${currentPage === page ? "bg-primary-color text-white" : "bg-secondary-color text-white"
+                }`}
+              onClick={() => handlePageChange(page)}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-md ${currentPage === totalPages ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"
+              }`}
+          >
+            <Icon icon="akar-icons:chevron-right" className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Modal Add/Edit */}
@@ -252,7 +362,7 @@ const JadwalPage: React.FC = () => {
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-white mb-2">Description</label>
+            <label className="block text-white mb-2">Deskripsi</label>
             <input
               type="text"
               name="description"
@@ -263,7 +373,7 @@ const JadwalPage: React.FC = () => {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-white mb-2">Weight</label>
+            <label className="block text-white mb-2">Berat</label>
             <input
               type="number"
               name="weight"
@@ -276,14 +386,6 @@ const JadwalPage: React.FC = () => {
           </div>
           <div className="mb-4">
             <label className="block text-white mb-2">Sensor ID</label>
-            {/* <input
-              type="number"
-              name="sensor_id"
-              value={newSchedule?.sensor_id}
-              onChange={handleChange}
-              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
-              required
-            /> */}
             <select
               name="sensor_id"
               value={newSchedule?.sensor_id}
@@ -299,28 +401,61 @@ const JadwalPage: React.FC = () => {
               ))}
             </select>
           </div>
+
+          {/* Time slot section */}
           <div className="mb-4">
-            <label className="block text-white mb-2">On Start</label>
-            <input
-              type="datetime-local"
-              name="onStart"
-              value={newSchedule?.onStart}
-              onChange={handleChange}
-              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
-              required
-            />
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-white">Waktu Jadwal</label>
+              <button
+                type="button"
+                onClick={setNextTimeSlot}
+                className="bg-tertiary-color text-white px-3 py-1 rounded-lg"
+              >
+                Set Interval 6 Jam
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-white mb-2">Waktu Mulai</label>
+                <input
+                  type="datetime-local"
+                  name="onStart"
+                  value={newSchedule?.onStart}
+                  onChange={handleChange}
+                  className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-white mb-2">Waktu Selesai</label>
+                <input
+                  type="datetime-local"
+                  name="onEnd"
+                  value={newSchedule?.onEnd}
+                  onChange={handleChange}
+                  className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Time slots display */}
+            <div className="bg-tertiary-color bg-opacity-20 p-4 rounded-lg">
+              <h3 className="text-white mb-2">Jadwal 6 Jam Berikutnya:</h3>
+              <div className="space-y-2">
+                {timeSlots.map((slot, index) => (
+                  <div key={index} className="flex justify-between text-sm text-white">
+                    <span>Slot {index + 1}:</span>
+                    <span>
+                      {new Date(slot.start).toLocaleString()} - {new Date(slot.end).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mb-4">
-            <label className="block text-white mb-2">On End</label>
-            <input
-              type="datetime-local"
-              name="onEnd"
-              value={newSchedule?.onEnd}
-              onChange={handleChange}
-              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
-              required
-            />
-          </div>
+
           <div className="flex justify-end space-x-4">
             <button
               type="button"
@@ -337,34 +472,6 @@ const JadwalPage: React.FC = () => {
             </button>
           </div>
         </form>
-      </Modal>
-
-      {/* Modal Delete */}
-      <Modal
-        isOpen={deleteModalIsOpen}
-        onRequestClose={closeDeleteModal}
-        contentLabel="Delete Schedule"
-        className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-md mx-auto my-20"
-        overlayClassName="fixed inset-0 flex items-center justify-center"
-      >
-        <h2 className="text-2xl font-bold text-white mb-4">Delete Schedule</h2>
-        <p className="text-white mb-4">
-          Are you sure you want to delete this schedule?
-        </p>
-        <div className="flex justify-end space-x-4">
-          <button
-            onClick={closeDeleteModal}
-            className="bg-gray-500 text-white p-2 rounded"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleDelete}
-            className="bg-red-700 text-white p-2 rounded"
-          >
-            Delete
-          </button>
-        </div>
       </Modal>
     </div>
   );

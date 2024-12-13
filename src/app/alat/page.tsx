@@ -8,7 +8,7 @@ import { useAlat } from '@/hooks/useFetchAlat';
 
 // Membuat instance Axios dengan baseURL
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:83/api/', // Sesuaikan dengan URL backend Anda
+  baseURL: 'http://103.127.138.198:8080/api/', // Sesuaikan dengan URL backend Anda
 });
 
 // Menambahkan token ke setiap request secara otomatis
