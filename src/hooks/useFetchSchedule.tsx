@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPut, apiDelete } from "@/api/apiService"; // Pastikan apiPost dan apiPut diekspor dari apiService
+import { apiGet, apiPost, apiPut, apiDelete } from "@/api/apiService";
 import { useCallback, useEffect, useState } from "react";
 
 interface Schedule {
@@ -15,16 +15,16 @@ interface Schedule {
 interface UseScheduleReturn {
   scheduleData: Schedule[];
   loading: boolean;
-  error: any;
+  error: unknown; // Use unknown for error
   submitSchedule: (newSchedule: Omit<Schedule, "id">) => Promise<void>;
   updateSchedule: (id: number, updatedSchedule: Partial<Schedule>) => Promise<void>;
   deleteSchedule: (id: number) => Promise<void>;
 }
 
-export const useSchedule = (branchId: any): UseScheduleReturn => {
+export const useSchedule = (branchId: string | number): UseScheduleReturn => { // Specify branchId type
   const [scheduleData, setScheduleData] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<unknown>(null); // Specify error type
 
   // Fetch data
   const fetchData = useCallback(async () => {

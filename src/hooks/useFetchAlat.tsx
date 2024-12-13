@@ -1,4 +1,3 @@
-// hooks/useFetchAlat.ts
 import { apiGet, apiPost, apiPut, apiDelete } from "@/api/apiService";
 import { useCallback, useEffect, useState } from "react";
 
@@ -14,17 +13,17 @@ interface Alat {
 interface UseAlatReturn {
     alatData: Alat[];
     loading: boolean;
-    error: any;
+    error: unknown;  // Use unknown instead of any for error
     submitAlat: (newAlat: Omit<Alat, "id">) => Promise<void>;
     updateAlat: (id: number, updatedAlat: Partial<Alat>) => Promise<void>;
     deleteAlat: (id: number) => Promise<void>;
     refetch: () => Promise<void>; // Menambahkan refetch
 }
 
-export const useAlat = (branchId: any): UseAlatReturn => {
+export const useAlat = (branchId: string | number): UseAlatReturn => { // Specify branchId type
     const [alatData, setAlatData] = useState<Alat[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<any>(null);
+    const [error, setError] = useState<unknown>(null); // Specify error type
 
     const fetchData = useCallback(async () => {
         setLoading(true);

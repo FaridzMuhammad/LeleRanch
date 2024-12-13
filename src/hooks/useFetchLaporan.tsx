@@ -1,4 +1,3 @@
-// hooks/useFetchLaporan.ts
 import { apiGet, apiPost, apiPut, apiDelete } from "@/api/apiService";
 import { useCallback, useEffect, useState } from "react";
 
@@ -11,7 +10,6 @@ interface Laporan {
     user_id: string;
     sensor_id: string;
     branch_id: string;
-    // Tambahkan properti relasi jika ada, misalnya user, sensor, branch
     user?: {
         name: string;
     };
@@ -26,7 +24,7 @@ interface Laporan {
 interface UseLaporanReturn {
     laporanData: Laporan[];
     loading: boolean;
-    error: any;
+    error: unknown; // Use unknown for error type
     submitLaporan: (newLaporan: Omit<Laporan, "id">) => Promise<void>;
     updateLaporan: (id: number, updatedLaporan: Partial<Laporan>) => Promise<void>;
     deleteLaporan: (id: number) => Promise<void>;
@@ -36,7 +34,7 @@ interface UseLaporanReturn {
 export const useLaporan = (branchId: string | null): UseLaporanReturn => {
     const [laporanData, setLaporanData] = useState<Laporan[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<any>(null);
+    const [error, setError] = useState<unknown>(null); // Use unknown for error
 
     const fetchData = useCallback(async () => {
         if (!branchId) {

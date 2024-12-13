@@ -40,14 +40,14 @@ const AlatPage: React.FC = () => {
     user_id: '',
   });
 
-  interface Sensor {
+  interface Alat {
     id: number;
     code: string;
     branch_id: string;
     latitude: string;
     longitude: string;
     isOn: boolean;
-    user_id: number;
+    user_id?: number; // Make user_id optional if it's not always present
   }
 
   const branchId = localStorage.getItem('branch_id');
@@ -56,7 +56,7 @@ const AlatPage: React.FC = () => {
   console.log('alatData', alatData);
   console.log('user', userId);
 
-  const openModal = (sensor: Sensor | null = null) => {
+  const openModal = (sensor: Alat | null = null) => {
     setModal({ ...modal, isEditing: true });
     if (sensor) {
       setCurrentSensorId(sensor.id);
@@ -173,7 +173,7 @@ const AlatPage: React.FC = () => {
           </thead>
           <tbody>
             {alatData && alatData?.length > 0 ? (
-              alatData.map((item: any, index) => (
+              alatData.map((item: Alat, index) => (
                 <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? 'bg-tertiary-color' : 'bg-primary-color'}`}>
                   <td className="py-4 px-2">{item?.id || 'No ID'}</td>
                   <td className="py-4 px-2">{item?.code || 'No Code'}</td>

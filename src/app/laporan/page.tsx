@@ -26,11 +26,6 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-interface Sensor {
-  id: number;
-  code: string;
-}
-
 
 
 const LaporanPage = () => {

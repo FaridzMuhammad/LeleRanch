@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image'; // Import Image from next/image
 
 const ProfilePage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,10 +45,13 @@ const ProfilePage = () => {
   return (
     <div className="flex flex-col items-center min-h-screen p-8">
       <div className="text-center mb-8">
-        <img
-          src="/path-to-your-image.jpg" // Ganti dengan path gambar Anda
+        {/* Replace <img> with <Image /> */}
+        <Image
+          src="/logo.png" // Replace with your image path
           alt="Profile"
-          className="h-32 w-32 rounded-full mx-auto mb-4 border-4 border-secondary-color" 
+          className="h-32 w-32 rounded-full mx-auto mb-4 border-4 border-secondary-color"
+          width={128}  // Provide width and height for optimization
+          height={128} // Same aspect ratio as the original <img> tag
         />
         <h1 className="text-4xl font-bold text-white">Abdul Basri</h1>
         <p className="text-lg text-white">Lele Ranch</p>

@@ -31,7 +31,6 @@ axiosInstance.interceptors.request.use(
 
 export default function Home() {
   const branchId = localStorage.getItem("branch_id");
-  const userId = localStorage.getItem("user_id");
   console.log("Branch ID:", branchId);
   const { scheduleData } = useSchedule(branchId);
 

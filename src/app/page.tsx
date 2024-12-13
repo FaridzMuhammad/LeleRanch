@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
-import {jwtDecode} from 'jwt-decode'; // Ensure jwt-decode is properly installed
+import { jwtDecode } from 'jwt-decode'; // Ensure jwt-decode is properly installed
+
+// Define the type for the decoded token
+interface DecodedToken {
+  exp: number; // Expiration time in seconds
+  sub: string; // Subject (usually the user ID or similar)
+  // Add other fields from your JWT if needed
+}
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -37,7 +44,7 @@ export default function Login() {
         }
 
         // Decode token to get expiration time
-        const decodedToken: any = jwtDecode(data.token); // Decode the token to extract expiration
+        const decodedToken: DecodedToken = jwtDecode(data.token); // Decode the token to extract expiration
         const expirationTime = decodedToken.exp * 1000; // Convert to milliseconds
         localStorage.setItem('tokenExpiration', expirationTime.toString());
 

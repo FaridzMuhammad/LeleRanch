@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, FC } from "react";
+import React, { useState, useEffect} from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useSchedule } from "@/hooks/useFetchSchedule";
@@ -26,7 +26,7 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-const JadwalPage: React.FC = () => {
+export default function JadwalPage(){
   const [modal, setModal] = useState({
     modalIsOpen: false,
     isEditing: false,
@@ -476,4 +476,4 @@ const JadwalPage: React.FC = () => {
   );
 };
 
-export default JadwalPage;
+export { JadwalPage };
