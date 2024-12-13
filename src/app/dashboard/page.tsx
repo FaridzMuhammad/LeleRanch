@@ -9,7 +9,6 @@ import HeaderMobile from '@/components/header-mobile';
 import MarginWidthWrapper from '@/components/margin-width-wrapper';
 import PageWrapper from '@/components/page-wrapper';
 import SideNav from '@/components/side-nav';
-import { useAlat } from "@/hooks/useFetchAlat";
 import axios from "axios";
 import { useSchedule } from '@/hooks/useFetchSchedule';
 
