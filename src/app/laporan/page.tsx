@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useAlat } from "@/hooks/useFetchAlat";
@@ -53,8 +53,14 @@ const LaporanPage = () => {
     branch_id: string;
   }
 
-  const branchId = localStorage.getItem("branch_id");
-  const userId = localStorage.getItem("user_id");
+  const [branchId, setBranchId] = useState<string | null>(null);
+    const [userId, setUserId] = useState<string | null>(null);
+
+    useEffect(() => {
+        // Access localStorage only in the client
+        setBranchId(localStorage.getItem("branch_id"));
+        setUserId(localStorage.getItem("user_id"));
+    }, []);
 
 
   const { alatData } = useAlat(branchId as string);

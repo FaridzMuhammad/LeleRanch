@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { useSchedule } from "@/hooks/useFetchSchedule";
 import { Icon } from "@iconify/react";
@@ -34,8 +34,14 @@ export default function JadwalPage() {
     user_id: "",
   });
 
-  const branchId = localStorage.getItem("branch_id");
-  const userId = localStorage.getItem("user_id");
+  const [branchId, setBranchId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Access localStorage only in the client
+    setBranchId(localStorage.getItem("branch_id"));
+    setUserId(localStorage.getItem("user_id"));
+  }, []);
   const { scheduleData, deleteSchedule, submitSchedule, updateSchedule } =
     useSchedule();
 
@@ -184,8 +190,8 @@ export default function JadwalPage() {
               key={page}
               onClick={() => handlePageChange(page)}
               className={`px-4 py-2 rounded ${currentPage === page
-                  ? "bg-primary-color text-white"
-                  : "bg-secondary-color text-white"
+                ? "bg-primary-color text-white"
+                : "bg-secondary-color text-white"
                 }`}
             >
               {page}

@@ -30,8 +30,14 @@ axiosInstance.interceptors.request.use(
 );
 
 export default function Home() {
-  const branchId = localStorage.getItem("branch_id");
-  console.log("Branch ID:", branchId);
+  const [branchId, setBranchId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Access localStorage only in the client
+    setBranchId(localStorage.getItem("branch_id"));
+    setUserId(localStorage.getItem("user_id"));
+  }, []);
   const { scheduleData } = useSchedule();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
