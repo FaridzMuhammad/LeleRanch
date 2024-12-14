@@ -29,41 +29,39 @@ api.interceptors.response.use(
     }
 );
 
-export const apiPost = async (url: string, data: any) => {
+// Fungsi API generik
+export const apiPost = async <T, R>(url: string, data: T): Promise<R> => {
     try {
         const response = await api.post(url, data);
-        return response.data;
+        return response.data as R;
     } catch (error) {
         throw error;
     }
-}
+};
 
-export const apiGet = async (url: string) => {
+export const apiGet = async <R = any>(url: string): Promise<R> => {
     try {
         const response = await api.get(url);
-        return response.data;
+        return response.data as R;
     } catch (error) {
         throw error;
     }
-}
+};
 
-export const apiPut = async (url: string, data: any) => {
+export const apiPut = async <T, R>(url: string, data: T): Promise<R> => {
     try {
         const response = await api.put(url, data);
-        return response.data;
+        return response.data as R;
     } catch (error) {
         throw error;
     }
-}
+};
 
-
-export const apiDelete = async (url: string) => {
+export const apiDelete = async <R extends any>(url: string): Promise<R> => {
     try {
-        const response = await api.delete(url);
-        return response.data;
+        const { data } = await api.delete<R>(url);
+        return data;
     } catch (error) {
         throw error;
     }
-}
-
-
+};

@@ -34,7 +34,7 @@ const LaporanPage = () => {
     deleteModalIsOpen: false,
     isEditing: false,
   })
-  const {modalIsOpen, isEditing, deleteModalIsOpen} = modal;
+  const { modalIsOpen, isEditing, deleteModalIsOpen } = modal;
   const [currentReportId, setCurrentReportId] = useState<number | null>(null);
   const [newReport, setNewReport] = useState({
     tanggal: "",
@@ -46,7 +46,7 @@ const LaporanPage = () => {
 
   interface Laporan {
     id: number;
-    date: string;
+    date: string | number | Date;
     description: string;
     user_id: string;
     sensor_id: string;
@@ -57,8 +57,8 @@ const LaporanPage = () => {
   const userId = localStorage.getItem("user_id");
 
 
-  const { alatData } = useAlat(branchId);
-  const { laporanData, submitLaporan } = useLaporan(branchId);
+  const { alatData } = useAlat(branchId as string);
+  const { laporanData, submitLaporan } = useLaporan(branchId as string);
   console.log(laporanData)
 
   // const fetchReports = async () => {
@@ -99,8 +99,8 @@ const LaporanPage = () => {
   //   setModalIsOpen(true);
   // };
 
-  const openModal = (laporan:Laporan | null = null) => {
-    setModal({...modal, modalIsOpen: true});
+  const openModal = (laporan: Laporan | null = null) => {
+    setModal({ ...modal, modalIsOpen: true });
     if (laporan) {
       setCurrentReportId(laporan.id);
       setNewReport({
@@ -110,14 +110,14 @@ const LaporanPage = () => {
         sensor_id: laporan.sensor_id,
         branch_id: laporan.branch_id,
       });
-      const updatedModal = {...modal, isEditing: true};
+      const updatedModal = { ...modal, isEditing: true };
       setModal(updatedModal);
     } else {
-      if(!userId || !branchId){
+      if (!userId || !branchId) {
         alert("User ID atau Branch ID tidak ditemukan");
         return;
       }
-      setModal({...modal, isEditing: false});
+      setModal({ ...modal, isEditing: false });
       setNewReport({
         tanggal: "",
         catatan: "",
@@ -125,23 +125,23 @@ const LaporanPage = () => {
         sensor_id: "",
         branch_id: "",
       });
-      const updatedModal = {...modal, isEditing: false, modalIsOpen: true};
+      const updatedModal = { ...modal, isEditing: false, modalIsOpen: true };
       setModal(updatedModal);
       console.log("newReport", newReport);
     }
   }
 
   const closeModal = () => {
-    setModal({...modal, modalIsOpen: false}); 
+    setModal({ ...modal, modalIsOpen: false });
   };
 
   const openDeleteModal = (id: number) => {
     setCurrentReportId(id);
-    setModal({...modal, deleteModalIsOpen: true});
+    setModal({ ...modal, deleteModalIsOpen: true });
   };
 
   const closeDeleteModal = () => {
-    setModal({...modal, deleteModalIsOpen: false});
+    setModal({ ...modal, deleteModalIsOpen: false });
   };
 
   const handleDelete = async () => {
@@ -170,7 +170,7 @@ const LaporanPage = () => {
     const reportPayload = {
       ...newReport,
       date: newReport.tanggal,
-      description: newReport.catatan, 
+      description: newReport.catatan,
     };
 
     // Log untuk memverifikasi payload yang dikirim
@@ -227,26 +227,35 @@ const LaporanPage = () => {
           </thead>
           <tbody>
             {laporanData && laporanData.length > 0 ? (
-              laporanData.map((item: any, index) => (
-                <tr
-                  key={index}
-                  className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}
-                >
-                  <td className="py-4 px-2">{new Date(item?.date).toLocaleDateString()}</td>
-                  <td className="py-4 px-2">{item.user?.name || "No User"}</td>
-                  <td className="py-4 px-2">{item.sensor?.code || "No Sensor"}</td>
-                  <td className="py-4 px-2">{item.branch?.name || "No Branch"}</td>
-                  <td className="py-4 px-2">{item?.description || "No Catatan"}</td> {/* Menampilkan description sebagai catatan */}
-                  <td className="py-4 px-2 flex justify-center space-x-2">
-                    <button className="text-white" onClick={() => openModal(item)}>
-                      <Icon icon="mdi:pencil" className="w-6 h-6" />
-                    </button>
-                    <button className="text-red-700" onClick={() => openDeleteModal(item?.id)}>
-                      <Icon icon="mdi:delete" className="w-6 h-6" />
-                    </button>
-                  </td>
-                </tr>
-              ))
+              laporanData.map((item: Laporan, index) => {
+                // Ambil nama pengguna dan nama cabang dari localStorage
+                const userName = localStorage.getItem("user_name") || "No User";
+                const branchName = localStorage.getItem("branch_name") || "No Branch";
+
+                // Cocokkan sensor ID dengan data dari `useFetchAlat`
+                const sensor = alatData.find((sensor) => sensor.id === Number(item.sensor_id));
+
+                return (
+                  <tr
+                    key={index}
+                    className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}
+                  >
+                    <td className="py-4 px-2">{new Date(item?.date).toLocaleDateString()}</td>
+                    <td className="py-4 px-2">{userName}</td>
+                    <td className="py-4 px-2">{sensor?.code || "No Sensor"}</td>
+                    <td className="py-4 px-2">{branchName}</td>
+                    <td className="py-4 px-2">{item?.description || "No Catatan"}</td>
+                    <td className="py-4 px-2 flex justify-center space-x-2">
+                      <button className="text-white" onClick={() => openModal(item)}>
+                        <Icon icon="mdi:pencil" className="w-6 h-6" />
+                      </button>
+                      <button className="text-red-700" onClick={() => openDeleteModal(item?.id)}>
+                        <Icon icon="mdi:delete" className="w-6 h-6" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan={6} className="py-4 px-2 text-center">
@@ -255,6 +264,7 @@ const LaporanPage = () => {
               </tr>
             )}
           </tbody>
+
         </table>
       </div>
 

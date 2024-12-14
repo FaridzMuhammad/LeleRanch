@@ -42,7 +42,7 @@ export const useSchedule = (branchId: string | number): UseScheduleReturn => { /
 
   const submitSchedule = useCallback(async (newSchedule: Omit<Schedule, "id">) => {
     try {
-      const response = await apiPost(`/foodfish`, newSchedule);
+      const response = await apiPost(`/foodfish`, newSchedule) as { data: Schedule };
       setScheduleData((prevData) => [...prevData, response.data]);
     } catch (error) {
       setError(error);
@@ -52,7 +52,7 @@ export const useSchedule = (branchId: string | number): UseScheduleReturn => { /
 
   const updateSchedule = useCallback(async (id: number, updatedSchedule: Partial<Schedule>) => {
     try {
-      const response = await apiPut(`/foodfish/${id}`, updatedSchedule);
+      const response = await apiPut(`/foodfish/${id}`, updatedSchedule) as { data: Schedule };
       setScheduleData((prevData) =>
         prevData.map((schedule) => (schedule.id === id ? response.data : schedule))
       );
