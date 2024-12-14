@@ -32,17 +32,18 @@ api.interceptors.response.use(
 // Fungsi API generik
 export const apiPost = async <T, R>(url: string, data: T): Promise<R> => {
     try {
-        const response = await api.post(url, data);
-        return response.data as R;
+        const response = await api.post<R>(url, data); // Explicitly specify response type
+        return response.data;
     } catch (error) {
         throw error;
     }
 };
 
+
 export const apiGet = async <R = any>(url: string): Promise<R> => {
     try {
-        const response = await api.get(url);
-        return response.data as R;
+        const response = await api.get<R>(url);
+        return response.data;
     } catch (error) {
         throw error;
     }
@@ -50,16 +51,16 @@ export const apiGet = async <R = any>(url: string): Promise<R> => {
 
 export const apiPut = async <T, R>(url: string, data: T): Promise<R> => {
     try {
-        const response = await api.put(url, data);
-        return response.data as R;
+        const response = await api.put<R>(url, data); // Explicitly specify response type
+        return response.data;
     } catch (error) {
         throw error;
     }
 };
 
-export const apiDelete = async <R extends any>(url: string): Promise<R> => {
+export const apiDelete = async <R = any>(url: string): Promise<R> => {
     try {
-        const { data } = await api.delete<R>(url);
+        const { data } = await api.delete<R>(url); // Use generic for response type
         return data;
     } catch (error) {
         throw error;

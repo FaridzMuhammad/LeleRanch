@@ -38,7 +38,7 @@ export const useSchedule = (branchId: string | number): UseScheduleReturn => { /
     } finally {
       setLoading(false);
     }
-  }, [branchId]);
+  }, []);
 
   const submitSchedule = useCallback(async (newSchedule: Omit<Schedule, "id">) => {
     try {
