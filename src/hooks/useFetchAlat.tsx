@@ -25,20 +25,35 @@ export const useAlat = (branchId: string | number): UseAlatReturn => { // Specif
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<unknown>(null); // Specify error type
 
+    const isAlatArray = (data: unknown): data is Alat[] => {
+        return Array.isArray(data) && data.every(item =>
+            typeof item.id === "number" &&
+            typeof item.code === "string" &&
+            typeof item.branch_id === "string" &&
+            typeof item.latitude === "string" &&
+            typeof item.longitude === "string" &&
+            typeof item.isOn === "boolean"
+        );
+    };
+    
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const response = await apiGet(`/sensors/branch/${branchId}`);
             console.log("response", response);
-            setAlatData(response);
-            setError(null);
+            if (isAlatArray(response)) {
+                setAlatData(response);
+                setError(null);
+            } else {
+                throw new Error("Invalid response format");
+            }
         } catch (error) {
             setError(error);
         } finally {
             setLoading(false);
         }
     }, [branchId]);
-
+    
     const submitAlat = useCallback(async (newAlat: Omit<Alat, "id">) => {
         try {
             await apiPost(`/sensor`, newAlat);
