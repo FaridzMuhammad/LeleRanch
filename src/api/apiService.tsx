@@ -19,48 +19,47 @@ api.interceptors.response.use(
     },
     (error) => {
         if (error.response && error.response.status === 401) {
-            // Hapus token dari localStorage
+            // Remove token from localStorage
             localStorage.removeItem("token");
 
-            // Redirect ke halaman login
+            // Redirect to login page
             window.location.href = "/";
         }
         return Promise.reject(error);
     }
 );
 
-// Fungsi API generik
-export const apiPost = async <T, R>(url: string, data: T): Promise<R> => {
+// Generic API functions with fallback default types
+export const apiPost = async <T, R = unknown>(url: string, data: T): Promise<R> => {
     try {
-        const response = await api.post<R>(url, data); // Explicitly specify response type
+        const response = await api.post<R>(url, data); // Specify response type R
         return response.data;
     } catch (error) {
         throw error;
     }
 };
 
-
-export const apiGet = async <R = any>(url: string): Promise<R> => {
+export const apiGet = async <R = unknown>(url: string): Promise<R> => {
     try {
-        const response = await api.get<R>(url);
+        const response = await api.get<R>(url); // Specify response type R
         return response.data;
     } catch (error) {
         throw error;
     }
 };
 
-export const apiPut = async <T, R>(url: string, data: T): Promise<R> => {
+export const apiPut = async <T, R = unknown>(url: string, data: T): Promise<R> => {
     try {
-        const response = await api.put<R>(url, data); // Explicitly specify response type
+        const response = await api.put<R>(url, data); // Specify response type R
         return response.data;
     } catch (error) {
         throw error;
     }
 };
 
-export const apiDelete = async <R = any>(url: string): Promise<R> => {
+export const apiDelete = async <R = unknown>(url: string): Promise<R> => {
     try {
-        const { data } = await api.delete<R>(url); // Use generic for response type
+        const { data } = await api.delete<R>(url); // Specify response type R
         return data;
     } catch (error) {
         throw error;

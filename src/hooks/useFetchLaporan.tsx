@@ -45,8 +45,9 @@ export const useLaporan = (branchId: string | null): UseLaporanReturn => {
         setLoading(true);
         try {
             const response = await apiGet(`/history`);
-            console.log("Fetched Laporan Data:", response.data);
-            setLaporanData(response.data);
+            const data = response as { data: Laporan[] };
+            console.log("Fetched Laporan Data:", data.data);
+            setLaporanData(data.data);
             setError(null);
         } catch (error) {
             setError(error);

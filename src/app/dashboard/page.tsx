@@ -32,7 +32,7 @@ axiosInstance.interceptors.request.use(
 export default function Home() {
   const branchId = localStorage.getItem("branch_id");
   console.log("Branch ID:", branchId);
-  const { scheduleData } = useSchedule(branchId as string);
+  const { scheduleData } = useSchedule();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [nextFeedingTime, setNextFeedingTime] = useState<string>("");

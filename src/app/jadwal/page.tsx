@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
 import { useSchedule } from "@/hooks/useFetchSchedule";
-import { useAlat } from "@/hooks/useFetchAlat";
 import { Icon } from "@iconify/react";
 
 interface Schedule {
@@ -38,8 +37,9 @@ export default function JadwalPage() {
   const branchId = localStorage.getItem("branch_id");
   const userId = localStorage.getItem("user_id");
   const { scheduleData, deleteSchedule, submitSchedule, updateSchedule } =
-    useSchedule(branchId as string);
-  const { alatData } = useAlat(branchId as string);
+    useSchedule();
+
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(7);
 
@@ -65,9 +65,10 @@ export default function JadwalPage() {
     setModal({ ...modal, modalIsOpen: false });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setNewSchedule({ ...newSchedule, [e.target.name]: e.target.value });
-  };
+  // Uncomment the following function when `handleChange` is needed in the future.
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  //   setNewSchedule({ ...newSchedule, [e.target.name]: e.target.value });
+  // };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
