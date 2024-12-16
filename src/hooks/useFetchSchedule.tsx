@@ -2,10 +2,11 @@ import { apiGet, apiPost, apiPut, apiDelete } from "@/api/apiService";
 import { useCallback, useEffect, useState } from "react";
 
 interface Schedule {
+  sensor_id: string;
+  code: string;
   id: number;
   description: string;
   branch_id: string;
-  sensor_id: string;
   weight: string;
   onStart: string;
   onEnd: string;
@@ -50,6 +51,16 @@ export const useSchedule = (): UseScheduleReturn => { // Specify branchId type
     }
   }, []);
 
+  const handleError = (error: any) => {
+    if (error.response) {
+      console.error("API error:", error.response.data);
+      alert(`Update failed: ${error.response.data.message || 'Unknown error'}`);
+    } else {
+      console.error("Error message:", error.message);
+      alert(`Network error: ${error.message}`);
+    }
+  };
+  
   const updateSchedule = useCallback(async (id: number, updatedSchedule: Partial<Schedule>) => {
     try {
       const response = await apiPut(`/foodfish/${id}`, updatedSchedule) as { data: Schedule };
@@ -58,10 +69,11 @@ export const useSchedule = (): UseScheduleReturn => { // Specify branchId type
       );
       console.log("response", response);
     } catch (error) {
-      setError(error);
-      console.error("Error updating schedule:", error);
+      handleError(error); // Handle error more specifically
     }
   }, []);
+  
+  
 
   const deleteSchedule = useCallback(async (id: number) => {
     try {

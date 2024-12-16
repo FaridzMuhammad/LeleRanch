@@ -172,11 +172,9 @@ const AlatPage: React.FC = () => {
           <thead>
             <tr>
               <th className="py-4 px-2">ID</th>
-              <th className="py-4 px-2">Code</th>
-              <th className="py-4 px-2">Branch ID</th>
-              <th className="py-4 px-2">Latitude</th>
-              <th className="py-4 px-2">Longitude</th>
-              <th className="py-4 px-2">Is On</th>
+              <th className="py-4 px-2">Nama</th>
+              <th className="py-4 px-2">Email</th>
+              <th className="py-4 px-2">Nomor Hp</th>
               <th className="py-4 px-2">Action</th>
             </tr>
           </thead>
@@ -187,9 +185,7 @@ const AlatPage: React.FC = () => {
                   <td className="py-4 px-2">{item?.id || 'No ID'}</td>
                   <td className="py-4 px-2">{item?.code || 'No Code'}</td>
                   <td className="py-4 px-2">{item?.branch_id || 'No Branch'}</td>
-                  <td className="py-4 px-2">{item?.latitude || 'No Latitude'}</td>
                   <td className="py-4 px-2">{item?.longitude || 'No Longitude'}</td>
-                  <td className="py-4 px-2">{item?.isOn ? 'Yes' : 'No'}</td>
                   <td className="py-4 px-2 flex justify-center space-x-2">
                     <button className="text-white" onClick={() => openModal(item)}>
                       <Icon icon="mdi:pencil" className="w-6 h-6" />
@@ -212,7 +208,7 @@ const AlatPage: React.FC = () => {
       </div>
 
       {/* Create/Edit Modal */}
-      <Modal
+      {/* <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
         contentLabel="Add or Edit Sensor"
@@ -287,7 +283,6 @@ const AlatPage: React.FC = () => {
         </form>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
       <Modal
         isOpen={deleteModalIsOpen}
         onRequestClose={closeDeleteModal}
@@ -305,7 +300,7 @@ const AlatPage: React.FC = () => {
             Delete
           </button>
         </div>
-      </Modal>
+      </Modal> */}
     </div>
   );
 };

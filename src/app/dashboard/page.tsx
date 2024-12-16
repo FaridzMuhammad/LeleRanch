@@ -181,7 +181,7 @@ export default function Home() {
                         <td className="py-4 px-2">{formatDate(item?.onStart)}</td>
                         <td className="py-4 px-2">{formatTime(item?.onStart)}</td>
                         <td className="py-4 px-2">{item?.weight}</td>
-                        <td className="py-4 px-2">{item?.sensor_id}</td>
+                        <td className="py-4 px-2">{item?.code}</td>
                       </tr>
                     ))}
                   </tbody>
