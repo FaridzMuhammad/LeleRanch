@@ -1,4 +1,12 @@
+// apiService.ts
+import axios from "axios";
 import api from "./apiClient";
+
+// Base URL konfigurasi
+const apiInstance = axios.create({
+  baseURL: "http://103.127.138.198:8080/api/",
+  timeout: 10000,
+});
 
 api.interceptors.request.use(
     (config) => {
@@ -29,39 +37,37 @@ api.interceptors.response.use(
     }
 );
 
-// Generic API functions with fallback default types
-export const apiPost = async <T, R = unknown>(url: string, data: T): Promise<R> => {
-    try {
-        const response = await api.post<R>(url, data); // Specify response type R
-        return response.data;
-    } catch (error) {
-        throw error;
+apiInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// GET request
+export const apiGet = async (url: string) => {
+  const response = await apiInstance.get(url);
+  return response.data;
 };
 
-export const apiGet = async <R = unknown>(url: string): Promise<R> => {
-    try {
-        const response = await api.get<R>(url); // Specify response type R
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+// POST request
+export const apiPost = async (url: string, data: any) => {
+  const response = await apiInstance.post(url, data);
+  return response.data;
 };
 
-export const apiPut = async <T, R = unknown>(url: string, data: T): Promise<R> => {
-    try {
-        const response = await api.put<R>(url, data); // Specify response type R
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+// PUT request
+export const apiPut = async (url: string, data: any) => {
+  const response = await apiInstance.put(url, data);
+  return response.data;
 };
 
-export const apiDelete = async <R = unknown>(url: string): Promise<R> => {
-    try {
-        const { data } = await api.delete<R>(url); // Specify response type R
-        return data;
-    } catch (error) {
-        throw error;
-    }
+// DELETE request
+export const apiDelete = async (url: string) => {
+  const response = await apiInstance.delete(url);
+  return response.data;
 };

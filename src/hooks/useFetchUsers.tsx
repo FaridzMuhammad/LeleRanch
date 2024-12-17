@@ -59,24 +59,34 @@ export const useUser = (branchId: string | null): UseUserReturn => {
     }, [branchId]);
 
     const submitUser = useCallback(async (newUser: Omit<User, "id">) => {
+        // Validasi branchId
+        if (!newUser.branch_Id) {
+            console.error("Branch ID tidak tersedia");
+            setError("Branch ID tidak tersedia");
+            return;
+        }
+    
         if (!validateUser(newUser)) {
-          return;
+            return;
         }
-      
+    
         try {
-          console.log("Submitting new user:", newUser);
-          await apiPost('users', newUser);  // Pastikan apiPost berfungsi dengan benar
-          await fetchData();  // Ambil data terbaru setelah user ditambahkan
+            console.log("Submitting new user:", newUser);
+    
+            // Pastikan branch_Id ada di payload
+            await apiPost(`users`, newUser);  // Pastikan apiPost berfungsi dengan benar
+            await fetchData();  // Ambil data terbaru setelah user ditambahkan
         } catch (error) {
-          if (axios.isAxiosError(error)) {
-            console.error("Axios error:", error.response?.data || error.message);
-            setError(error.response?.data || error.message);
-          } else {
-            console.error("Unexpected error:", error);
-            setError("An unexpected error occurred");
-          }
+            if (axios.isAxiosError(error)) {
+                console.error("Axios error:", error.response?.data || error.message);
+                setError(error.response?.data || error.message);
+            } else {
+                console.error("Unexpected error:", error);
+                setError("An unexpected error occurred");
+            }
         }
-      }, [fetchData]);
+    }, [fetchData]);
+    
       
       
 

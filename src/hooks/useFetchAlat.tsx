@@ -28,7 +28,7 @@ export const useAlat = (branchId: string | number): UseAlatReturn => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await apiGet<Alat[]>(`/sensors/branch/${branchId}`);
+      const response = await apiGet(`sensors/branch/${branchId}`);
       setAlatData(response);
       setError(null);
     } catch (error) {
@@ -42,7 +42,7 @@ export const useAlat = (branchId: string | number): UseAlatReturn => {
   const submitAlat = useCallback(
     async (newAlat: Omit<Alat, "id">) => {
       try {
-        await apiPost(`/sensor`, newAlat);
+        await apiPost(`sensor`, newAlat);
         await fetchData();
       } catch (error) {
         console.error("Error submitting alat:", error);
@@ -55,7 +55,7 @@ export const useAlat = (branchId: string | number): UseAlatReturn => {
   const updateAlat = useCallback(
     async (id: number, updatedAlat: Partial<Alat>) => {
       try {
-        await apiPut(`/sensor/${id}`, updatedAlat);
+        await apiPut(`sensor/${id}`, updatedAlat);
         await fetchData();
       } catch (error) {
         console.error("Error updating alat:", error);
@@ -68,7 +68,7 @@ export const useAlat = (branchId: string | number): UseAlatReturn => {
   const deleteAlat = useCallback(
     async (id: number) => {
       try {
-        await apiDelete(`/sensor/${id}`);
+        await apiDelete(`sensor/${id}`);
         await fetchData();
       } catch (error) {
         console.error("Error deleting alat:", error);

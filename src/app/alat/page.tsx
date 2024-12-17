@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import Modal from 'react-modal';
 import axios from 'axios';
 import { useAlat } from '@/hooks/useFetchAlat';
+import { useBranch } from '@/hooks/useFetchBranch';
 
 // Membuat instance Axios dengan baseURL
 const axiosInstance = axios.create({
@@ -53,17 +54,16 @@ const AlatPage: React.FC = () => {
   const branchId = localStorage.getItem('branch_id') || '';
   const userId = localStorage.getItem('user_id');
   const { alatData, submitAlat, updateAlat, deleteAlat } = useAlat(branchId as string);
-  
+  const { branchData } = useBranch(userId || '');
+
   const openModal = (sensor: Alat | null = null) => {
-    setModal({ ...modal, isEditing: true });
+    setModal({ ...modal, isEditing: !!sensor, modalIsOpen: true });
     if (sensor) {
       setCurrentSensorId(sensor.id);
-      console.log('sensor', sensor);
-      const sanitizedValue =
-      {
+      const sanitizedValue = {
         user_id: userId || '',
       };
-      const newSensor = {
+      const newSensorData = {
         code: sensor.code,
         branch_id: sensor.branch_id,
         latitude: sensor.latitude.toString(),
@@ -71,16 +71,12 @@ const AlatPage: React.FC = () => {
         isOn: sensor.isOn,
         user_id: sanitizedValue.user_id,
       };
-      setNewSensor(newSensor);
-      console.log('newSensor', newSensor);
-      const updateSensor = { ...modal, isEditing: true, modalIsOpen: true };
-      setModal(updateSensor);
+      setNewSensor(newSensorData);
     } else {
       if (!userId || !branchId) {
         alert('User ID or Branch ID not found');
         return;
       }
-      setModal({ ...modal, isEditing: false });
       setNewSensor({
         code: '',
         branch_id: branchId,
@@ -89,10 +85,9 @@ const AlatPage: React.FC = () => {
         isOn: false,
         user_id: userId,
       });
-      const updateSensor = { ...modal, isEditing: false, modalIsOpen: true };
-      setModal(updateSensor);
     }
   };
+
 
   const closeModal = () => {
     setModal({ ...modal, modalIsOpen: false });
@@ -125,32 +120,43 @@ const AlatPage: React.FC = () => {
   };
 
   // Handle form submission (Create/Update)
+  // Handle form submission (Create/Update)
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!newSensor.user_id) {
-        alert('User ID not found');
-        return;
+      alert('User ID not found');
+      return;
     }
 
     // Pastikan bahwa latitude dan longitude dikirim dalam tipe number
     const updatedAlat = {
-        ...newSensor,
-        latitude: parseFloat(newSensor.latitude),
-        longitude: parseFloat(newSensor.longitude),
+      ...newSensor,
+      latitude: parseFloat(newSensor.latitude),
+      longitude: parseFloat(newSensor.longitude),
     };
 
     console.log('Data yang akan dikirim:', updatedAlat); // Log data sebelum dikirimkan
 
     try {
-        const response = await submitAlat(updatedAlat);
-        console.log('Response from submitAlat:', response);  // Tambahkan log di sini
-        closeModal();
+      if (isEditing) {
+        // Update sensor
+        if (currentSensorId !== null) {
+          const response = await updateAlat(currentSensorId, updatedAlat); // Call update function
+          console.log('Response from updateAlat:', response);  // Log response
+        }
+      } else {
+        // Create new sensor
+        const response = await submitAlat(updatedAlat); // Call create function
+        console.log('Response from submitAlat:', response);  // Log response
+      }
+      closeModal();
     } catch (error) {
-        console.error('Error submitting sensor:', error);
-        alert('Failed to add sensor');
+      console.error('Error submitting sensor:', error);
+      alert('Failed to submit sensor');
     }
-};
+  };
+
 
 
 
@@ -170,7 +176,7 @@ const AlatPage: React.FC = () => {
             <tr>
               <th className="py-4 px-2">ID</th>
               <th className="py-4 px-2">Code</th>
-              <th className="py-4 px-2">Branch ID</th>
+              <th className="py-4 px-2">Branch City</th>
               <th className="py-4 px-2">Latitude</th>
               <th className="py-4 px-2">Longitude</th>
               <th className="py-4 px-2">Is On</th>
@@ -183,7 +189,7 @@ const AlatPage: React.FC = () => {
                 <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? 'bg-tertiary-color' : 'bg-primary-color'}`}>
                   <td className="py-4 px-2">{item?.id || 'No ID'}</td>
                   <td className="py-4 px-2">{item?.code || 'No Code'}</td>
-                  <td className="py-4 px-2">{item?.branch_id || 'No Branch'}</td>
+                  <td className="py-4 px-2">{branchData?.city || 'No Branch'}</td>
                   <td className="py-4 px-2">{item?.latitude || 'No Latitude'}</td>
                   <td className="py-4 px-2">{item?.longitude || 'No Longitude'}</td>
                   <td className="py-4 px-2">{item?.isOn ? 'Yes' : 'No'}</td>
@@ -232,7 +238,7 @@ const AlatPage: React.FC = () => {
           <div className="mb-4">
             <label className="block text-white mb-2">Branch ID</label>
             <input
-              type="number"
+              type="text"
               name="branch_id"
               value={newSensor?.branch_id}
               onChange={handleChange}

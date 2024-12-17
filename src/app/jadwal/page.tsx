@@ -65,6 +65,7 @@ export default function JadwalPage() {
   const [branchId, setBranchId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const { alatData } = useAlat(branchId as string);
+  console.log('Alat Data:', alatData); // Log alat data
 
   useEffect(() => {
     // Access localStorage only in the client
@@ -228,6 +229,7 @@ export default function JadwalPage() {
           <tbody>
             {currentItems.length > 0 ? (
               currentItems.map((item, index) => (
+                console.log(alatData),
                 <tr
                   key={item.id}
                   className={`${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"
@@ -235,7 +237,12 @@ export default function JadwalPage() {
                 >
                   <td className="py-4 px-2">{item.description}</td>
                   <td className="py-4 px-2">{item.weight}</td>
-                  <td className="py-4 px-2">{alatData.find(alat => alat.id === Number(item.sensor_id))?.code || "N/A"}</td>
+                  <td className="py-4 px-2">
+                    {item.sensor_id
+                      ? alatData?.filter(alat => alat.id === item.sensor_id).map(alat => alat.code).join(", ")
+                      : null}
+                  </td>
+
                   <td className="py-4 px-2">{formatDate(item.onStart)}</td>
                   <td className="py-4 px-2">{formatTime(item.onStart)}</td>
                   <td className="py-4 px-2 flex justify-center space-x-2">

@@ -53,20 +53,20 @@ const ProfilePage = () => {
           width={128}  // Provide width and height for optimization
           height={128} // Same aspect ratio as the original <img> tag
         />
-        <h1 className="text-4xl font-bold text-white">Abdul Basri</h1>
-        <p className="text-lg text-white">Lele Ranch</p>
+        <h1 className="text-4xl font-bold text-white">Lele Ranch</h1>
       </div>
 
       <div className="w-full md:w-2/3 lg:w-1/2 text-white bg-secondary-color shadow-md rounded-lg p-6">
         <h2 className="text-2xl font-semibold  mb-4">Informasi Kontak</h2>
         <p className="text-lg mb-2"><strong>Email:</strong> Abdul@gmail.com</p>
-        <p className="text-lg mb-2"><strong>Telepon:</strong> 08545769288</p>
+        <p className="text-lg mb-2"><strong>Nama: </strong> Abdul</p>
 
-        <h2 className="text-2xl font-semibold mb-4 mt-8">Informasi Peternakan</h2>
-        <p className="text-lg mb-2"><strong>Nama Peternakan:</strong> Lele Farm Otomatis</p>
-        <p className="text-lg mb-2"><strong>Lokasi:</strong> Jl. Peternakan No. 12, Kota Lele</p>
-        <p className="text-lg mb-2"><strong>Jumlah Kolam:</strong> 15 Kolam</p>
-        <p className="text-lg mb-2"><strong>Sistem Otomatisasi:</strong> </p>
+        <button 
+          className="mt-8 bg-tertiary-color text-white px-6 py-3 rounded-lg hover:bg-[#ADD8E6] w-full"
+          onClick={handleResetPasswordClick}
+        >
+          Edit Profile
+        </button>
 
         <button 
           className="mt-8 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-800 w-full"

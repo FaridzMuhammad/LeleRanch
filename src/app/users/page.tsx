@@ -18,7 +18,7 @@ axiosInstance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log('Request URL:', config.url);  // Log untuk melihat URL yang dipanggil
+    console.log('Request URL:', config.url); 
     return config;
   },
   (error) => Promise.reject(error)
@@ -51,7 +51,7 @@ const UsersPage: React.FC = () => {
     branch_Id: "",
     status: "",
     condition: "",
-    user_id: "",
+    user_id: 0,
   });
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
@@ -91,7 +91,7 @@ const UsersPage: React.FC = () => {
         branch_Id: branchId || '',
         status: user.status,
         condition: user.condition,
-        user_id: userId || '',
+        user_id: Number(userId) || 0,
       };
       setNewUser(updatedUser);
       setModal({ ...modal, isEditing: true, modalIsOpen: true });
@@ -109,7 +109,7 @@ const UsersPage: React.FC = () => {
         branch_Id: branchId || '',
         status: "",
         condition: "",
-        user_id: userId,
+        user_id: Number(userId),
       });
     }
   };
@@ -144,48 +144,40 @@ const UsersPage: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    // Verifikasi branch_Id sebelum mengirim data
-    if (!newUser.branch_Id || !branchId) {
-      alert("Branch ID is required and cannot be empty.");
-      return;
-    }
-
-    const userPayload = {
-      name: newUser.name,
-      email: newUser.email,
-      password: newUser.password,
-      role: newUser.role,
-      branch_Id: branchIdNumber,  // Gunakan angka yang sudah dikonversi
-      user_id: newUser.user_id ? Number(newUser.user_id) : 0,
-      status: newUser.status,
-      condition: newUser.condition,
-    };
-
-
-    console.log("User Payload:", userPayload); // Debug log untuk memastikan payload
-
-    try {
-      if (isEditing) {
-        if (currentUserId !== null) {
-          await updateUser(currentUserId, userPayload); // Update user jika isEditing true
+      e.preventDefault();
+      
+      // Ambil branchId
+      const branchId = localStorage.getItem("branch_id");
+      console.log("Mengirim branchId:", branchId);
+    
+      // Pastikan branchId tidak null atau undefined
+      if (!branchId) {
+        console.error("Branch ID tidak ditemukan di localStorage.");
+        return;
+      }
+    
+      const userPayload = {
+        ...newUser,
+        branch_Id: Number(branchId),  
+      };
+    
+      try {
+        if (isEditing && currentUserId) {
+          // Mengupdate pengguna jika sedang dalam mode edit
+          await updateUser(currentUserId, userPayload);
+        } else {
+          // Menambahkan pengguna baru
+          await submitUser(userPayload);
         }
-        alert("User successfully updated");
-      } else {
-        await submitUser(userPayload);  // Tambah user jika isEditing false
-        alert("User successfully added");
+        closeModal();  // Tutup modal setelah berhasil
+      } catch (error) {
+        console.error("Error submitting user:", error);
+        alert("Terjadi kesalahan saat mengirim data.");
       }
-      closeModal();
-    } catch (error: any) {
-      console.error("Error submitting user:", error);
-      alert("Failed to process user");
-      if (error.response) {
-        console.log("Server Response:", error.response.data); // Tampilkan response error dari server
-      }
-    }
+    };
+  
 
-  };
+
 
 
   return (
@@ -213,14 +205,14 @@ const UsersPage: React.FC = () => {
           <tbody>
             {userData && userData.length > 0 ? (
               userData.map((item, index) => {
-              
                 return (
+                  
                   <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}>
-                    <td className="py-4 px-2">{item.id || "No ID"}</td>
-                    <td className="py-4 px-2">{item.name || "No name"}</td>
-                    <td className="py-4 px-2">{item.email || "No email"}</td>
-                    <td className="py-4 px-2">{item.role || "No role"}</td>
-                    <td className="py-4 px-2">{branchIdNumber}</td> {/* Menampilkan city dari branchData */}
+                    <td className="py-4 px-2">{item?.id || "No ID"}</td>
+                    <td className="py-4 px-2">{item?.name || "No name"}</td>
+                    <td className="py-4 px-2">{item?.email || "No email"}</td>
+                    <td className="py-4 px-2">{item?.role || "No role"}</td>
+                    <td className="py-4 px-2">{branchData?.city}</td>
                     <td className="py-4 px-2 flex justify-center space-x-2">
                       <button className="text-white" onClick={() => openModal(item)}>
                         <Icon icon="mdi:pencil" className="w-6 h-6" />
@@ -238,7 +230,6 @@ const UsersPage: React.FC = () => {
               </tr>
             )}
           </tbody>
-
         </table>
       </div>
 
