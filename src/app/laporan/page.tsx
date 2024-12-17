@@ -5,6 +5,7 @@ import Modal from "react-modal";
 import axios from "axios";
 import { useAlat } from "@/hooks/useFetchAlat";
 import { useLaporan } from "@/hooks/useFetchLaporan";
+import { useUser } from "@/hooks/useFetchUsers";
 import { Icon } from "@iconify/react";
 
 // Membuat instance Axios dengan baseURL
@@ -54,10 +55,9 @@ const LaporanPage = () => {
   }
 
   const [branchId, setBranchId] = useState<string | null>(null);
-    const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
-        // Access localStorage only in the client
         setBranchId(localStorage.getItem("branch_id"));
         setUserId(localStorage.getItem("user_id"));
     }, []);
@@ -65,45 +65,8 @@ const LaporanPage = () => {
 
   const { alatData } = useAlat(branchId as string);
   const { laporanData, submitLaporan } = useLaporan(branchId as string);
-  console.log(laporanData)
+  const {userData} = useUser(branchId as string);
 
-  // const fetchReports = async () => {
-  //   try {
-  //     const response = await axiosInstance.get("history");
-  //     console.log("Fetched Report Data:", response.data);
-  //     setReportData(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching report data:", error);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchReports();
-  // }, []);
-
-  // const openModal = (report: any = null) => {
-  //   if (report) {
-  //     setIsEditing(true);
-  //     setCurrentReportId(report.id);
-  //     setNewReport({
-  //       tanggal: report.date ? new Date(report.date).toISOString().split("T")[0] : "",
-  //       catatan: report.description || "", // Pastikan catatan ada, jika null ganti dengan string kosong
-  //       user_id: report.user_id,
-  //       sensor_id: report.sensor_id,
-  //       branch_id: report.branch_id,
-  //     });
-  //   } else {
-  //     setIsEditing(false);
-  //     setNewReport({
-  //       tanggal: "",
-  //       catatan: "",
-  //       user_id: "",
-  //       sensor_id: "",
-  //       branch_id: "",
-  //     });
-  //   }
-  //   setModalIsOpen(true);
-  // };
 
   const openModal = (laporan: Laporan | null = null) => {
     setModal({ ...modal, modalIsOpen: true });
@@ -238,7 +201,6 @@ const LaporanPage = () => {
                 const userName = localStorage.getItem("user_name") || "No User";
                 const branchName = localStorage.getItem("branch_name") || "No Branch";
 
-                // Cocokkan sensor ID dengan data dari `useFetchAlat`
                 const sensor = alatData.find((sensor) => sensor.id === Number(item.sensor_id));
 
                 return (

@@ -1,99 +1,116 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Icon } from '@iconify/react';
-import Modal from 'react-modal';
-import axios from 'axios';
-import { useAlat } from '@/hooks/useFetchAlat';
+import React, { useState, useEffect } from "react";
+import { Icon } from "@iconify/react";
+import Modal from "react-modal";
+import { useUser } from "@/hooks/useFetchUsers";
+import { useBranch } from "@/hooks/useFetchBranch";
+import axios from "axios";
 
-// Membuat instance Axios dengan baseURL
+// Menambahkan log untuk debugging
 const axiosInstance = axios.create({
-  baseURL: 'http://103.127.138.198:8080/api/', // Sesuaikan dengan URL backend Anda
+  baseURL: "http://103.127.138.198:8080/api/",
 });
 
-// Menambahkan token ke setiap request secara otomatis
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    console.log('Request URL:', config.url);  // Log untuk melihat URL yang dipanggil
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-const AlatPage: React.FC = () => {
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+  branch_Id: number;
+  status: string;
+  condition: string;
+}
+
+const UsersPage: React.FC = () => {
   const [modal, setModal] = useState({
     modalIsOpen: false,
     isEditing: false,
     deleteModalIsOpen: false,
   });
   const { modalIsOpen, isEditing, deleteModalIsOpen } = modal;
-  const [currentSensorId, setCurrentSensorId] = useState<number | null>(null);
-  const [newSensor, setNewSensor] = useState({
-    code: '',
-    branch_id: '',
-    latitude: '',
-    longitude: '',
-    isOn: true,
-    user_id: '',
-  });
 
-  interface Alat {
-    id: number;
-    code: string;
-    branch_id: string;
-    latitude: number;
-    longitude: number;
-    isOn: boolean;
-    user_id?: number; // Make user_id optional if it's not always present
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "",
+    branch_Id: "",
+    status: "",
+    condition: "",
+    user_id: "",
+  });
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  const branchId = localStorage.getItem("branch_id");
+  if (!branchId) {
+    alert("Branch ID is not found in localStorage.");
+    return;
+  }
+  const branchIdNumber = Number(branchId);
+  console.log("Branch ID:", branchIdNumber);
+
+  if (isNaN(branchIdNumber)) {
+    alert("Invalid Branch ID.");
+    return;
   }
 
-  const branchId = localStorage.getItem('branch_id') || '';
-  const userId = localStorage.getItem('user_id');
-  const { alatData, submitAlat, updateAlat, deleteAlat } = useAlat(branchId as string);
-  console.log('alatData', alatData);
-  console.log('branch', branchId);
-  console.log('user', userId);
 
-  const openModal = (sensor: Alat | null = null) => {
-    setModal({ ...modal, isEditing: true });
-    if (sensor) {
-      setCurrentSensorId(sensor.id);
-      console.log('sensor', sensor);
-      const sanitizedValue =
-      {
+  const userId = localStorage.getItem("user_id");
+  const { userData, loading, error, submitUser, updateUser, deleteUser, refetch } = useUser(branchId);
+  const { branchData } = useBranch(userId || '');
+  console.log("userData:", userData);
+
+  useEffect(() => {
+    refetch();
+  }, []);
+
+  const openModal = (user?: User) => {
+    setModal({ ...modal, modalIsOpen: true });
+    if (user) {
+      setCurrentUserId(Number(user.id));
+      console.log("User ID:", user.branch_Id);
+      const updatedUser = {
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        role: user.role,
+        branch_Id: branchId || '',
+        status: user.status,
+        condition: user.condition,
         user_id: userId || '',
       };
-      const newSensor = {
-        code: sensor.code,
-        branch_id: sensor.branch_id,
-        latitude: sensor.latitude.toString(),
-        longitude: sensor.longitude.toString(),
-        isOn: sensor.isOn,
-        user_id: sanitizedValue.user_id,
-      };
-      setNewSensor(newSensor);
-      console.log('newSensor', newSensor);
-      const updateSensor = { ...modal, isEditing: true, modalIsOpen: true };
-      setModal(updateSensor);
+      setNewUser(updatedUser);
+      setModal({ ...modal, isEditing: true, modalIsOpen: true });
     } else {
       if (!userId || !branchId) {
-        alert('User ID or Branch ID not found');
+        alert("User ID and branch ID not found in localStorage");
         return;
       }
-      setModal({ ...modal, isEditing: false });
-      setNewSensor({
-        code: '',
-        branch_id: branchId,
-        latitude: '',
-        longitude: '',
-        isOn: false,
+      setModal({ ...modal, isEditing: false, modalIsOpen: true });
+      setNewUser({
+        name: "",
+        email: "",
+        password: "",
+        role: "",
+        branch_Id: branchId || '',
+        status: "",
+        condition: "",
         user_id: userId,
       });
-      const updateSensor = { ...modal, isEditing: false, modalIsOpen: true };
-      setModal(updateSensor);
     }
   };
 
@@ -101,8 +118,8 @@ const AlatPage: React.FC = () => {
     setModal({ ...modal, modalIsOpen: false });
   };
 
-  const openDeleteModal = (id: number) => {
-    setCurrentSensorId(id);
+  const openDeleteModal = (userId: number) => {
+    setCurrentUserId(userId);
     setModal({ ...modal, deleteModalIsOpen: true });
   };
 
@@ -110,51 +127,65 @@ const AlatPage: React.FC = () => {
     setModal({ ...modal, deleteModalIsOpen: false });
   };
 
-  // Handle deleting a sensor
   const handleDelete = async () => {
-    if (currentSensorId !== null) {
+    if (currentUserId !== null) {
       try {
-        await deleteAlat(currentSensorId);
+        await deleteUser(currentUserId);
+        refetch();
       } catch (error) {
-        console.error('Error deleting sensor:', error);
+        console.error("Error deleting user:", error);
       }
     }
     closeDeleteModal();
   };
 
-  // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewSensor({ ...newSensor, [e.target.name]: e.target.value });
+    setNewUser({ ...newUser, [e.target.name]: e.target.value });
   };
 
-  // Handle form submission (Create/Update)
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!newSensor.user_id) {
-        alert('User ID not found');
-        return;
+    // Verifikasi branch_Id sebelum mengirim data
+    if (!newUser.branch_Id || !branchId) {
+      alert("Branch ID is required and cannot be empty.");
+      return;
     }
 
-    // Pastikan bahwa latitude dan longitude dikirim dalam tipe number
-    const updatedAlat = {
-        ...newSensor,
-        latitude: parseFloat(newSensor.latitude),
-        longitude: parseFloat(newSensor.longitude),
+    const userPayload = {
+      name: newUser.name,
+      email: newUser.email,
+      password: newUser.password,
+      role: newUser.role,
+      branch_Id: branchIdNumber,  // Gunakan angka yang sudah dikonversi
+      user_id: newUser.user_id ? Number(newUser.user_id) : 0,
+      status: newUser.status,
+      condition: newUser.condition,
     };
 
-    console.log('Data yang akan dikirim:', updatedAlat); // Log data sebelum dikirimkan
+
+    console.log("User Payload:", userPayload); // Debug log untuk memastikan payload
 
     try {
-        const response = await submitAlat(updatedAlat);
-        console.log('Response from submitAlat:', response);  // Tambahkan log di sini
-        closeModal();
-    } catch (error) {
-        console.error('Error submitting sensor:', error);
-        alert('Failed to add sensor');
+      if (isEditing) {
+        if (currentUserId !== null) {
+          await updateUser(currentUserId, userPayload); // Update user jika isEditing true
+        }
+        alert("User successfully updated");
+      } else {
+        await submitUser(userPayload);  // Tambah user jika isEditing false
+        alert("User successfully added");
+      }
+      closeModal();
+    } catch (error: any) {
+      console.error("Error submitting user:", error);
+      alert("Failed to process user");
+      if (error.response) {
+        console.log("Server Response:", error.response.data); // Tampilkan response error dari server
+      }
     }
-};
 
+  };
 
 
   return (
@@ -174,136 +205,153 @@ const AlatPage: React.FC = () => {
               <th className="py-4 px-2">ID</th>
               <th className="py-4 px-2">Nama</th>
               <th className="py-4 px-2">Email</th>
-              <th className="py-4 px-2">Nomor Hp</th>
+              <th className="py-4 px-2">Role</th>
+              <th className="py-4 px-2">Branch City</th>
               <th className="py-4 px-2">Action</th>
             </tr>
           </thead>
           <tbody>
-            {alatData && alatData?.length > 0 ? (
-              alatData.map((item: Alat, index) => (
-                <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? 'bg-tertiary-color' : 'bg-primary-color'}`}>
-                  <td className="py-4 px-2">{item?.id || 'No ID'}</td>
-                  <td className="py-4 px-2">{item?.code || 'No Code'}</td>
-                  <td className="py-4 px-2">{item?.branch_id || 'No Branch'}</td>
-                  <td className="py-4 px-2">{item?.longitude || 'No Longitude'}</td>
-                  <td className="py-4 px-2 flex justify-center space-x-2">
-                    <button className="text-white" onClick={() => openModal(item)}>
-                      <Icon icon="mdi:pencil" className="w-6 h-6" />
-                    </button>
-                    <button className="text-red-700" onClick={() => openDeleteModal(item?.id)}>
-                      <Icon icon="mdi:delete" className="w-6 h-6" />
-                    </button>
-                  </td>
-                </tr>
-              ))
+            {userData && userData.length > 0 ? (
+              userData.map((item, index) => {
+              
+                return (
+                  <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}>
+                    <td className="py-4 px-2">{item.id || "No ID"}</td>
+                    <td className="py-4 px-2">{item.name || "No name"}</td>
+                    <td className="py-4 px-2">{item.email || "No email"}</td>
+                    <td className="py-4 px-2">{item.role || "No role"}</td>
+                    <td className="py-4 px-2">{branchIdNumber}</td> {/* Menampilkan city dari branchData */}
+                    <td className="py-4 px-2 flex justify-center space-x-2">
+                      <button className="text-white" onClick={() => openModal(item)}>
+                        <Icon icon="mdi:pencil" className="w-6 h-6" />
+                      </button>
+                      <button className="text-red-700" onClick={() => openDeleteModal(item.id)}>
+                        <Icon icon="mdi:delete" className="w-6 h-6" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan={7} className="py-4 px-2 text-center">
-                  No data available
-                </td>
+                <td colSpan={7} className="py-4 px-2 text-center">No data available</td>
               </tr>
             )}
           </tbody>
+
         </table>
       </div>
 
-      {/* Create/Edit Modal */}
-      {/* <Modal
+      {/* Modal untuk Create/Edit */}
+      <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
-        contentLabel="Add or Edit Sensor"
+        contentLabel="Add or Edit User"
         className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-4xl mx-auto my-20"
         overlayClassName="fixed inset-0 flex items-center justify-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-4">{isEditing ? 'Edit Sensor' : 'Add Sensor'}</h2>
+        <h2 className="text-2xl font-bold text-white mb-4">{isEditing ? "Edit User" : "Add User"}</h2>
         <form onSubmit={handleSubmit}>
+          {/* Form inputs */}
           <div className="mb-4">
-            <label className="block text-white mb-2">Code</label>
+            <label className="block text-white mb-2">Nama</label>
             <input
               type="text"
-              name="code"
-              value={newSensor?.code}
+              name="name"
+              value={newUser.name}
               onChange={handleChange}
               className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-white mb-2">Branch ID</label>
+            <label className="block text-white mb-2">Email</label>
             <input
-              type="number"
-              name="branch_id"
-              value={newSensor?.branch_id}
+              type="email"
+              name="email"
+              value={newUser.email}
               onChange={handleChange}
               className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-white mb-2">Latitude</label>
+            <label className="block text-white mb-2">Password</label>
             <input
-              type="number"
-              step="0.000001"
-              name="latitude"
-              value={newSensor?.latitude}
+              type="password"
+              name="password"
+              value={newUser.password}
               onChange={handleChange}
               className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
             />
           </div>
           <div className="mb-4">
-            <label className="block text-white mb-2">Longitude</label>
+            <label className="block text-white mb-2">Role</label>
             <input
-              type="number"
-              step="0.000001"
-              name="longitude"
-              value={newSensor?.longitude}
+              type="text"
+              name="role"
+              value={newUser.role}
               onChange={handleChange}
               className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-white mb-2">Is On</label>
-            <input
-              type="checkbox"
-              name="isOn"
-              checked={newSensor?.isOn}
-              onChange={(e) => setNewSensor({ ...newSensor, isOn: e.target.checked })}
-            />
-          </div>
-          <div className="flex justify-end space-x-4">
-            <button type="button" onClick={closeModal} className="bg-gray-500 text-white p-2 rounded-lg">
-              Cancel
-            </button>
-            <button type="submit" className="bg-tertiary-color text-white p-2 rounded-lg">
-              {isEditing ? 'Update' : 'Create'}
+          {!isEditing && (
+            <>
+              <div className="mb-4">
+                <label className="block text-white mb-2">Status</label>
+                <input
+                  type="text"
+                  name="status"
+                  value={newUser.status}
+                  onChange={handleChange}
+                  className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-white mb-2">Condition</label>
+                <input
+                  type="text"
+                  name="condition"
+                  value={newUser.condition}
+                  onChange={handleChange}
+                  className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
+                  required
+                />
+              </div>
+            </>
+          )}
+          <div className="flex justify-end">
+            <button type="submit" className="bg-tertiary-color text-white py-2 px-6 rounded-lg">
+              {isEditing ? "Update" : "Add"} User
             </button>
           </div>
         </form>
       </Modal>
 
+      {/* Delete Modal */}
       <Modal
         isOpen={deleteModalIsOpen}
         onRequestClose={closeDeleteModal}
-        contentLabel="Delete Sensor"
-        className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-md mx-auto my-20"
+        contentLabel="Delete User"
+        className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-sm mx-auto my-20"
         overlayClassName="fixed inset-0 flex items-center justify-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-4">Delete Sensor</h2>
-        <p className="text-white mb-4">Are you sure you want to delete this sensor?</p>
-        <div className="flex justify-end space-x-4">
-          <button onClick={closeDeleteModal} className="bg-gray-500 text-white p-2 rounded">
+        <h2 className="text-2xl font-bold text-white mb-4">Delete User</h2>
+        <p className="text-white mb-4">Are you sure you want to delete this user?</p>
+        <div className="flex justify-between">
+          <button onClick={closeDeleteModal} className="bg-tertiary-color text-white py-2 px-4 rounded-lg">
             Cancel
           </button>
-          <button onClick={handleDelete} className="bg-red-700 text-white p-2 rounded">
+          <button onClick={handleDelete} className="bg-red-600 text-white py-2 px-4 rounded-lg">
             Delete
           </button>
         </div>
-      </Modal> */}
+      </Modal>
     </div>
   );
 };
 
-export default AlatPage;
-
+export default UsersPage;

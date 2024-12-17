@@ -26,8 +26,6 @@ interface UseLaporanReturn {
     loading: boolean;
     error: unknown; // Use unknown for error type
     submitLaporan: (newLaporan: Omit<Laporan, "id">) => Promise<void>;
-    updateLaporan: (id: number, updatedLaporan: Partial<Laporan>) => Promise<void>;
-    deleteLaporan: (id: number) => Promise<void>;
     refetch: () => Promise<void>;
 }
 
@@ -37,21 +35,14 @@ export const useLaporan = (branchId: string | null): UseLaporanReturn => {
     const [error, setError] = useState<unknown>(null); // Use unknown for error
 
     const fetchData = useCallback(async () => {
-        if (!branchId) {
-            setError("Branch ID tidak tersedia.");
-            setLoading(false);
-            return;
-        }
         setLoading(true);
         try {
-            const response = await apiGet(`/history`);
-            const data = response as { data: Laporan[] };
-            console.log("Fetched Laporan Data:", data.data);
-            setLaporanData(data.data);
+            const response = await apiGet<Laporan[]>(`/history`);
+            setLaporanData(response);
             setError(null);
         } catch (error) {
+            console.error("Error fetching laporan data:", error);
             setError(error);
-            console.error("Error fetching laporan:", error);
         } finally {
             setLoading(false);
         }
@@ -68,31 +59,9 @@ export const useLaporan = (branchId: string | null): UseLaporanReturn => {
         }
     }, [fetchData]);
 
-    const updateLaporan = useCallback(async (id: number, updatedLaporan: Partial<Laporan>) => {
-        try {
-            await apiPut(`/history/${id}`, updatedLaporan);
-            await fetchData(); // Memanggil refetch setelah update
-        } catch (error) {
-            setError(error);
-            console.error("Error updating laporan:", error);
-            throw error;
-        }
-    }, [fetchData]);
-
-    const deleteLaporan = useCallback(async (id: number) => {
-        try {
-            await apiDelete(`/history/${id}`);
-            await fetchData(); // Memanggil refetch setelah delete
-        } catch (error) {
-            setError(error);
-            console.error("Error deleting laporan:", error);
-            throw error;
-        }
-    }, [fetchData]);
-
     useEffect(() => {
         fetchData();
     }, [fetchData]);
 
-    return { laporanData, loading, error, submitLaporan, updateLaporan, deleteLaporan, refetch: fetchData };
+    return { laporanData, loading, error, submitLaporan, refetch: fetchData };
 };

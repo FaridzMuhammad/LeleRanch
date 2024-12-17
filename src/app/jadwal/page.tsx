@@ -65,7 +65,7 @@ export default function JadwalPage() {
   const [branchId, setBranchId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const { alatData } = useAlat(branchId as string);
-  
+
   useEffect(() => {
     // Access localStorage only in the client
     setBranchId(localStorage.getItem("branch_id"));
@@ -90,7 +90,7 @@ export default function JadwalPage() {
         code: "",
         description: "",
         branch_id: branchId || "",
-        sensor_id: "",  
+        sensor_id: "",
         weight: "",
         onStart: "",
         onEnd: "",
@@ -98,7 +98,7 @@ export default function JadwalPage() {
       });
     }
   };
-  
+
 
   const closeModal = () => {
     setModal({ ...modal, modalIsOpen: false });
@@ -110,51 +110,51 @@ export default function JadwalPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
+
     if (!newSchedule.user_id) {
       alert("User ID is required. Please ensure you are logged in.");
       return;
     }
-  
+
     console.log('Sensor ID yang dikirim:', newSchedule.sensor_id); // Log sensor_id yang dikirim
-const updatedSchedule = {
-  ...newSchedule,
-  onStart: new Date(newSchedule.onStart).toISOString(),
-  onEnd: new Date(newSchedule.onEnd).toISOString(),
-  code: newSchedule.code || "default_code", // Add a default code if not provided
-  sensor_id: newSchedule.sensor_id || "" // Ensure sensor_id is always a string
-};
+    const updatedSchedule = {
+      ...newSchedule,
+      onStart: new Date(newSchedule.onStart).toISOString(),
+      onEnd: new Date(newSchedule.onEnd).toISOString(),
+      code: newSchedule.code || "default_code", // Add a default code if not provided
+      sensor_id: newSchedule.sensor_id || "" // Ensure sensor_id is always a string
+    };
 
-console.log('Updated Schedule:', updatedSchedule); // Log data yang dikirim
+    console.log('Updated Schedule:', updatedSchedule); // Log data yang dikirim
 
-try {
-  if (isEditing && currentScheduleId !== null) {
-    await updateSchedule(currentScheduleId, updatedSchedule);
-  } else {
-    await submitSchedule(updatedSchedule);
-  }
-  closeModal();
-} catch (error) {
-  console.error("Error handling schedule:", error);
-  alert("Failed to save schedule. Please try again.");
-}
+    try {
+      if (isEditing && currentScheduleId !== null) {
+        await updateSchedule(currentScheduleId, updatedSchedule);
+      } else {
+        await submitSchedule(updatedSchedule);
+      }
+      closeModal();
+    } catch (error) {
+      console.error("Error handling schedule:", error);
+      alert("Failed to save schedule. Please try again.");
+    }
 
-console.log('Updated Schedule:', updatedSchedule); // Log data yang dikirim
+    console.log('Updated Schedule:', updatedSchedule); // Log data yang dikirim
 
-try {
-  if (isEditing && currentScheduleId !== null) {
-    await updateSchedule(currentScheduleId, updatedSchedule);
-  } else {
-    await submitSchedule(updatedSchedule);
-  }
-  closeModal();
-} catch (error) {
-  console.error("Error handling schedule:", error);
-  alert("Failed to save schedule. Please try again.");
-}
+    try {
+      if (isEditing && currentScheduleId !== null) {
+        await updateSchedule(currentScheduleId, updatedSchedule);
+      } else {
+        await submitSchedule(updatedSchedule);
+      }
+      closeModal();
+    } catch (error) {
+      console.error("Error handling schedule:", error);
+      alert("Failed to save schedule. Please try again.");
+    }
 
   };
-  
+
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
@@ -235,7 +235,7 @@ try {
                 >
                   <td className="py-4 px-2">{item.description}</td>
                   <td className="py-4 px-2">{item.weight}</td>
-                  <td className="py-4 px-2">{item.sensor_id || "N/A"}</td>
+                  <td className="py-4 px-2">{alatData.find(alat => alat.id === Number(item.sensor_id))?.code || "N/A"}</td>
                   <td className="py-4 px-2">{formatDate(item.onStart)}</td>
                   <td className="py-4 px-2">{formatTime(item.onStart)}</td>
                   <td className="py-4 px-2 flex justify-center space-x-2">
@@ -313,33 +313,28 @@ try {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-white mb-2">Sensor ID</label>
+            <label className="block text-white mb-2">Sensor</label>
             <select
               name="sensor_id"
-              value={newSchedule?.sensor_id}
+              value={newSchedule.sensor_id}
               onChange={handleChange}
               className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
             >
-              <option value="">Select Sensor</option>
-              {currentItems.map((sensor) => (
-                <option key={sensor.id} value={sensor.id}>
-                  {sensor.id}
+              <option value="">Pilih Sensor</option>
+              {/* if isediting, show alat code and if not, alat id*/}
+              {alatData.map((alat) => (
+                <option key={alat.id} value={alat.id}>
+                  {alat.code}
                 </option>
               ))}
             </select>
           </div>
+
           {/* Time slot section */}
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
               <label className="text-white">Waktu Jadwal</label>
-              <button
-                type="button"
-                onClick={setNextTimeSlot}
-                className="bg-tertiary-color text-white px-3 py-1 rounded-lg"
-              >
-                Set Interval 6 Jam
-              </button>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
@@ -363,20 +358,6 @@ try {
                   className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
                   required
                 />
-              </div>
-            </div>
-            {/* Time slots display */}
-            <div className="bg-tertiary-color bg-opacity-20 p-4 rounded-lg">
-              <h3 className="text-white mb-2">Jadwal 6 Jam Berikutnya:</h3>
-              <div className="space-y-2">
-                {timeSlots.map((slot, index) => (
-                  <div key={index} className="flex justify-between text-sm text-white">
-                    <span>Slot {index + 1}:</span>
-                    <span>
-                      {new Date(slot.start).toLocaleString()} - {new Date(slot.end).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
