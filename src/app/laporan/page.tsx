@@ -6,6 +6,7 @@ import axios from "axios";
 import { useAlat } from "@/hooks/useFetchAlat";
 import { useLaporan } from "@/hooks/useFetchLaporan";
 import { useUser } from "@/hooks/useFetchUsers";
+import { useBranch } from "@/hooks/useFetchBranch";
 import { Icon } from "@iconify/react";
 
 // Membuat instance Axios dengan baseURL
@@ -54,18 +55,22 @@ const LaporanPage = () => {
     branch_id: string;
   }
 
-  const [branchId, setBranchId] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  interface Sensor {
+    id: number;
+    code: string;
+  }
 
-    useEffect(() => {
-        setBranchId(localStorage.getItem("branch_id"));
-        setUserId(localStorage.getItem("user_id"));
-    }, []);
+  const branchId = localStorage.getItem('branch_id') || '';
+  const userId = localStorage.getItem('user_id');
+  console.log("Branch ID:", branchId);
+  console.log("User ID:", userId);
 
-
-  const { alatData } = useAlat(branchId as string);
+  const { alatData} = useAlat(branchId as string);
   const { laporanData, submitLaporan } = useLaporan(branchId as string);
-  const {userData} = useUser(branchId as string);
+  const { userData } = useUser(branchId as string);
+  const { branchData } = useBranch(userId || '');
+  console.log("Alat Data:", alatData);
+
 
 
   const openModal = (laporan: Laporan | null = null) => {
@@ -198,10 +203,15 @@ const LaporanPage = () => {
             {laporanData && laporanData.length > 0 ? (
               laporanData.map((item: Laporan, index) => {
                 // Ambil nama pengguna dan nama cabang dari localStorage
-                const userName = localStorage.getItem("user_name") || "No User";
-                const branchName = localStorage.getItem("branch_name") || "No Branch";
 
-                const sensor = alatData.find((sensor) => sensor.id === Number(item.sensor_id));
+
+                const user = localStorage.getItem("user_id");
+                const branch = localStorage.getItem("branch_id");
+
+                const userName = userData.find((user) => user.id === item.user_id)?.name || "Unknown User";
+                // const branchCity = branchData.find((branch) => branch.id === item.branch_id)?.city || "Unknown Branch";
+                const alatCode = alatData.find((sensor) => sensor.id === item.sensor_id)?.code || "Unknown Sensor";
+                console.log("alatData", alatData);
 
                 return (
                   <tr
@@ -210,8 +220,8 @@ const LaporanPage = () => {
                   >
                     <td className="py-4 px-2">{new Date(item?.date).toLocaleDateString()}</td>
                     <td className="py-4 px-2">{userName}</td>
-                    <td className="py-4 px-2">{sensor?.code || "No Sensor"}</td>
-                    <td className="py-4 px-2">{branchName}</td>
+                    <td className="py-4 px-2">{alatCode}</td>
+                    <td className="py-4 px-2">{branchData?.city}</td>
                     <td className="py-4 px-2">{item?.description || "No Catatan"}</td>
                     <td className="py-4 px-2 flex justify-center space-x-2">
                       <button className="text-white" onClick={() => openModal(item)}>

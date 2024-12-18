@@ -18,7 +18,7 @@ axiosInstance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log('Request URL:', config.url); 
+    console.log('Request URL:', config.url);
     return config;
   },
   (error) => Promise.reject(error)
@@ -30,7 +30,7 @@ interface User {
   email: string;
   password: string;
   role: string;
-  branch_Id: number;
+  branch_id: number;
   status: string;
   condition: string;
 }
@@ -42,13 +42,14 @@ const UsersPage: React.FC = () => {
     deleteModalIsOpen: false,
   });
   const { modalIsOpen, isEditing, deleteModalIsOpen } = modal;
+  
 
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
     password: "",
     role: "",
-    branch_Id: "",
+    branch_id: "",
     status: "",
     condition: "",
     user_id: 0,
@@ -74,6 +75,8 @@ const UsersPage: React.FC = () => {
   const { branchData } = useBranch(userId || '');
   console.log("userData:", userData);
 
+  console.log("Branch ID:", branchId);
+
   useEffect(() => {
     refetch();
   }, []);
@@ -82,13 +85,13 @@ const UsersPage: React.FC = () => {
     setModal({ ...modal, modalIsOpen: true });
     if (user) {
       setCurrentUserId(Number(user.id));
-      console.log("User ID:", user.branch_Id);
+      console.log("User ID:", user.branch_id);
       const updatedUser = {
         name: user.name,
         email: user.email,
         password: user.password,
         role: user.role,
-        branch_Id: branchId || '',
+        branch_id: branchId || '',
         status: user.status,
         condition: user.condition,
         user_id: Number(userId) || 0,
@@ -106,7 +109,7 @@ const UsersPage: React.FC = () => {
         email: "",
         password: "",
         role: "",
-        branch_Id: branchId || '',
+        branch_id: branchId || '',
         status: "",
         condition: "",
         user_id: Number(userId),
@@ -144,38 +147,40 @@ const UsersPage: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      
-      // Ambil branchId
-      const branchId = localStorage.getItem("branch_id");
-      console.log("Mengirim branchId:", branchId);
-    
-      // Pastikan branchId tidak null atau undefined
-      if (!branchId) {
-        console.error("Branch ID tidak ditemukan di localStorage.");
-        return;
-      }
-    
-      const userPayload = {
-        ...newUser,
-        branch_Id: Number(branchId),  
-      };
-    
-      try {
-        if (isEditing && currentUserId) {
-          // Mengupdate pengguna jika sedang dalam mode edit
-          await updateUser(currentUserId, userPayload);
-        } else {
-          // Menambahkan pengguna baru
-          await submitUser(userPayload);
-        }
-        closeModal();  // Tutup modal setelah berhasil
-      } catch (error) {
-        console.error("Error submitting user:", error);
-        alert("Terjadi kesalahan saat mengirim data.");
-      }
+    e.preventDefault();
+
+    // Ambil branchId
+    const branchId = localStorage.getItem("branch_id");
+    console.log("Mengirim branchId:", branchId);
+
+    // Pastikan branchId tidak null atau undefined
+    if (!branchId) {
+      console.error("Branch ID tidak ditemukan di localStorage.");
+      return;
+    }
+
+    const userPayload = {
+      ...newUser,
+      branch_id: Number(branchId),
     };
-  
+
+    try {
+      if (isEditing && currentUserId) {
+        await updateUser(currentUserId, userPayload);
+        console.log("Updating user:", userPayload);
+      } else {
+        // Menambahkan pengguna baru
+        await submitUser(userPayload);
+        console.log("Submitting new user:", userPayload);
+      }
+      closeModal();
+      refetch();
+    } catch (error) {
+      console.error("Error submitting user:", error);
+      alert("Terjadi kesalahan saat mengirim data.");
+    }
+  };
+
 
 
 
@@ -206,7 +211,7 @@ const UsersPage: React.FC = () => {
             {userData && userData.length > 0 ? (
               userData.map((item, index) => {
                 return (
-                  
+
                   <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}>
                     <td className="py-4 px-2">{item?.id || "No ID"}</td>
                     <td className="py-4 px-2">{item?.name || "No name"}</td>
@@ -217,6 +222,7 @@ const UsersPage: React.FC = () => {
                       <button className="text-white" onClick={() => openModal(item)}>
                         <Icon icon="mdi:pencil" className="w-6 h-6" />
                       </button>
+
                       <button className="text-red-700" onClick={() => openDeleteModal(item.id)}>
                         <Icon icon="mdi:delete" className="w-6 h-6" />
                       </button>
@@ -290,6 +296,17 @@ const UsersPage: React.FC = () => {
           </div>
           {!isEditing && (
             <>
+              <div className="mb-4">
+                <label className="block text-white mb-2">branch id</label>
+                <input
+                  type="number"
+                  name="branch_id"
+                  value={branchIdNumber}
+                  onChange={handleChange}
+                  className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
+                  required
+                />
+              </div>
               <div className="mb-4">
                 <label className="block text-white mb-2">Status</label>
                 <input

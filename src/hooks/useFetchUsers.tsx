@@ -4,7 +4,7 @@ import axios from "axios";
 
 const validateUser = (user: Omit<User, "id">): boolean => {
     // Add your validation logic here
-    if (!user.name || !user.email || !user.password || !user.role || !user.branch_Id || !user.status || !user.condition) {
+    if (!user.name || !user.email || !user.password || !user.role || !user.branch_id || !user.status || !user.condition) {
         console.error("Validation failed: Missing required fields");
         return false;
     }
@@ -18,7 +18,7 @@ interface User {
     email: string;
     password: string;
     role: string;
-    branch_Id: number;
+    branch_id: number;
     status: string;
     condition: string;
 }
@@ -30,6 +30,7 @@ interface UseUserReturn {
     submitUser: (newUser: Omit<User, "id">) => Promise<void>;
     updateUser: (id: number, updatedUser: Partial<User>) => Promise<void>;
     deleteUser: (id: number) => Promise<void>;
+    resetPassword: (id: number) => Promise<void>;
     refetch: () => Promise<void>;
 }
 
@@ -60,19 +61,19 @@ export const useUser = (branchId: string | null): UseUserReturn => {
 
     const submitUser = useCallback(async (newUser: Omit<User, "id">) => {
         // Validasi branchId
-        if (!newUser.branch_Id) {
+        if (!newUser.branch_id) {
             console.error("Branch ID tidak tersedia");
             setError("Branch ID tidak tersedia");
             return;
         }
-    
+
         if (!validateUser(newUser)) {
             return;
         }
-    
+
         try {
             console.log("Submitting new user:", newUser);
-    
+
             // Pastikan branch_Id ada di payload
             await apiPost(`users`, newUser);  // Pastikan apiPost berfungsi dengan benar
             await fetchData();  // Ambil data terbaru setelah user ditambahkan
@@ -86,9 +87,7 @@ export const useUser = (branchId: string | null): UseUserReturn => {
             }
         }
     }, [fetchData]);
-    
-      
-      
+
 
     const updateUser = useCallback(async (id: number, updatedUser: Partial<User>) => {
         try {
@@ -113,6 +112,32 @@ export const useUser = (branchId: string | null): UseUserReturn => {
         }
     }, [fetchData]);
 
+    const resetPassword = useCallback(async (id: number) => {
+        const payload = {
+            userId: id,
+            newPassword: "12345",
+        };
+
+        console.log("Reset password payload:", payload);
+
+        try {
+            await apiPost(`reset-password`, payload);
+            console.log("Password reset successful");
+            await fetchData(); // Refresh data
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.error("Axios error resetting password:", error.response?.data || error.message);
+                setError(error.response?.data || error.message);
+            } else {
+                console.error("Unexpected error resetting password:", error);
+                setError("Unexpected error occurred.");
+            }
+        }
+    }, [fetchData]);
+
+    
+
+
     const refetch = useCallback(async () => {
         await fetchData();
     }, [fetchData]);
@@ -121,6 +146,6 @@ export const useUser = (branchId: string | null): UseUserReturn => {
         fetchData();
     }, [fetchData]);
 
-    return { userData, loading, error, submitUser, updateUser, deleteUser, refetch };
+    return { userData, loading, error, submitUser, updateUser, deleteUser, refetch, resetPassword };
 }
 

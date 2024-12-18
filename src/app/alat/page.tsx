@@ -55,6 +55,7 @@ const AlatPage: React.FC = () => {
   const userId = localStorage.getItem('user_id');
   const { alatData, submitAlat, updateAlat, deleteAlat } = useAlat(branchId as string);
   const { branchData } = useBranch(userId || '');
+  console.log('alatData:', alatData);
 
   const openModal = (sensor: Alat | null = null) => {
     setModal({ ...modal, isEditing: !!sensor, modalIsOpen: true });
@@ -119,8 +120,6 @@ const AlatPage: React.FC = () => {
     setNewSensor({ ...newSensor, [e.target.name]: e.target.value });
   };
 
-  // Handle form submission (Create/Update)
-  // Handle form submission (Create/Update)
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -156,9 +155,6 @@ const AlatPage: React.FC = () => {
       alert('Failed to submit sensor');
     }
   };
-
-
-
 
   return (
     <div className="p-6 bg-primary-color min-h-screen">

@@ -11,40 +11,33 @@ import PageWrapper from '@/components/page-wrapper';
 import SideNav from '@/components/side-nav';
 import axios from "axios";
 import { useSchedule } from '@/hooks/useFetchSchedule';
+import { useAlat } from '@/hooks/useFetchAlat';
 
-const axiosInstance = axios.create({
-  baseURL: "http://103.127.138.198:8080/api/",
-});
 
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+
+export interface Schedule {
+
+  onStart: string;
+
+  weight: number;
+
+  sensor_id?: string; 
+}
+
 
 export default function Home() {
-  const [branchId, setBranchId] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const branchId = localStorage.getItem('branch_id') || '';
+  const userId = localStorage.getItem('user_id');
 
-  useEffect(() => {
-    // Access localStorage only in the client
-    setBranchId(localStorage.getItem("branch_id"));
-    setUserId(localStorage.getItem("user_id"));
-  }, []);
+
   const { scheduleData } = useSchedule();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [nextFeedingTime, setNextFeedingTime] = useState<string>("");
   const [totalFeedingGiven, setTotalFeedingGiven] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [itemsPerPage] = useState<number>(7); // Menampilkan 7 data per halaman
+  const [itemsPerPage] = useState<number>(7);
+  const { alatData } = useAlat(branchId as string);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -181,7 +174,10 @@ export default function Home() {
                         <td className="py-4 px-2">{formatDate(item?.onStart)}</td>
                         <td className="py-4 px-2">{formatTime(item?.onStart)}</td>
                         <td className="py-4 px-2">{item?.weight}</td>
-                        <td className="py-4 px-2">{item?.code}</td>
+                        <td className="py-4 px-2">{item?.sensor_id
+                          ? alatData?.filter(alat => alat?.id === item?.sensor_id).map(alat => alat?.code).join(", ")
+                          : null}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
