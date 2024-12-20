@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Modal from "react-modal";
 import { useSchedule } from "@/hooks/useFetchSchedule";
 import { Icon } from "@iconify/react";
-import axios from "axios";
 import { useAlat } from "@/hooks/useFetchAlat";
 
 interface Schedule {
@@ -12,37 +11,14 @@ interface Schedule {
   code: string;
   description: string;
   branch_id: string;
-  sensor_id?: string; // Make sensor_id optional
+  sensor_id?: string;
   weight: string;
   onStart: string;
   onEnd: string;
   user_id: string;
 }
 
-interface Alat {
-  id: number;
-  code: string;
-  branch_id: string;
-}
-
-const axiosInstance = axios.create({
-  baseURL: "http://103.127.138.198:8080/api/",
-});
-
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-export default function JadwalPage() {
+const JadwalPage: React.FC = () => {
   const [modal, setModal] = useState({
     modalIsOpen: false,
     isEditing: false,
@@ -54,22 +30,19 @@ export default function JadwalPage() {
     id: 0,
     code: "",
     description: "",
-    branch_id: "",
+    branch_id: localStorage.getItem("branch_id") || "",
     sensor_id: "",
     weight: "",
     onStart: "",
     onEnd: "",
-    user_id: "",
+    user_id: localStorage.getItem("user_id") || "",
   });
-  const branchId = localStorage.getItem('branch_id') || '';
-  const userId = localStorage.getItem('user_id');
-  const { alatData } = useAlat(branchId as string);
-  const { scheduleData, deleteSchedule, submitSchedule, updateSchedule } =
-    useSchedule();
+
+  const { alatData, refetch } = useAlat(newSchedule.branch_id);
+  const { scheduleData, deleteSchedule, submitSchedule, updateSchedule } = useSchedule();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(7);
-
+  const itemsPerPage = 7;
 
   const openModal = (schedule: Schedule | null = null) => {
     setModal({ isEditing: !!schedule, modalIsOpen: true });
@@ -81,12 +54,12 @@ export default function JadwalPage() {
         id: 0,
         code: "",
         description: "",
-        branch_id: branchId || "",
+        branch_id: localStorage.getItem("branch_id") || "",
         sensor_id: "",
         weight: "",
         onStart: "",
         onEnd: "",
-        user_id: userId || "",
+        user_id: localStorage.getItem("user_id") || "",
       });
     }
   };
@@ -122,6 +95,7 @@ export default function JadwalPage() {
         await submitSchedule(updatedSchedule);
       }
       closeModal();
+      refetch();
     } catch (error) {
       console.error("Error handling schedule:", error);
       alert("Failed to save schedule. Please try again.");
@@ -142,19 +116,20 @@ export default function JadwalPage() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 
   const currentItems = scheduleData
-    ? scheduleData.slice(indexOfFirstItem, indexOfLastItem)
-    : [];
+  ? scheduleData
+      .sort((a, b) => new Date(b.onStart).getTime() - new Date(a.onStart).getTime()) // Sort by 'onStart' in descending order
+      .slice(indexOfFirstItem, indexOfLastItem)
+  : [];
   const totalPages = Math.ceil(scheduleData?.length / itemsPerPage);
 
-  const sensorCode = (sensorId: string) => {
-    return alatData?.filter((alat) => alat.id === Number(sensorId)).map((alat) => alat.code);
-  }
+  const pageRange = 2;
+  const startPage = Math.max(1, currentPage - pageRange);
+  const endPage = Math.min(totalPages, currentPage + pageRange);
 
-  console.log("sensorCode", sensorCode);
+  const pageToShow = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const prevPage = () => setCurrentPage((prev) => Math.max(1, prev - 1));
+  const nextPage = () => setCurrentPage((prev) => Math.min(totalPages, prev + 1));
 
   return (
     <div className="p-6 bg-primary-color min-h-screen">
@@ -182,7 +157,7 @@ export default function JadwalPage() {
             </tr>
           </thead>
           <tbody>
-            {currentItems.length > 0 ? (
+            {currentItems && currentItems.length > 0 ? (
               currentItems.map((item, index) => (
                 <tr
                   key={item.id}
@@ -191,17 +166,17 @@ export default function JadwalPage() {
                   <td className="py-4 px-2">{item.description}</td>
                   <td className="py-4 px-2">{item.weight}</td>
                   <td className="py-4 px-2">
-                    {item?.sensor_id
-                      ? alatData?.filter(alat => alat?.id === item?.sensor_id).map(alat => alat?.code).join(", ")
+                    {item.sensor_id
+                      ? alatData
+                          ?.filter((alat) => alat?.id === Number(item.sensor_id))
+                          .map((alat) => alat?.code)
+                          .join(", ")
                       : null}
                   </td>
                   <td className="py-4 px-2">{formatDate(item.onStart)}</td>
                   <td className="py-4 px-2">{formatTime(item.onStart)}</td>
                   <td className="py-4 px-2 flex justify-center space-x-2">
-                    <button
-                      className="text-white"
-                      onClick={() => openModal(item)}
-                    >
+                    <button className="text-white" onClick={() => openModal(item)}>
                       <Icon icon="mdi:pencil" className="w-6 h-6" />
                     </button>
                     <button
@@ -224,19 +199,39 @@ export default function JadwalPage() {
             )}
           </tbody>
         </table>
-        <div className="flex justify-end py-4 px-4 space-x-2">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+
+        <div className="flex justify-end py-4 space-x-2 px-4">
+          <button
+            onClick={prevPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-md ${
+              currentPage === 1 ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"
+            }`}
+          >
+            <Icon icon="akar-icons:chevron-left" className="w-5 h-5" />
+          </button>
+          {pageToShow.map((page) => (
             <button
               key={page}
-              onClick={() => handlePageChange(page)}
-              className={`px-4 py-2 rounded ${currentPage === page
-                ? "bg-primary-color text-white"
-                : "bg-secondary-color text-white"
-                }`}
+              className={`px-4 py-2 rounded-md ${
+                currentPage === page ? "bg-primary-color text-white" : "bg-secondary-color text-white"
+              }`}
+              onClick={() => setCurrentPage(page)}
             >
               {page}
             </button>
           ))}
+          <button
+            onClick={nextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-md ${
+              currentPage === totalPages
+                ? "bg-secondary-color text-gray-500"
+                : "bg-secondary-color text-white"
+            }`}
+          >
+            <Icon icon="akar-icons:chevron-right" className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
@@ -331,4 +326,6 @@ export default function JadwalPage() {
       </Modal>
     </div>
   );
-}
+};
+
+export default JadwalPage;

@@ -22,24 +22,46 @@ interface UseScheduleReturn {
   deleteSchedule: (id: number) => Promise<void>;
 }
 
-export const useSchedule = (): UseScheduleReturn => { // Specify branchId type
+export const useSchedule = (): UseScheduleReturn => {
   const [scheduleData, setScheduleData] = useState<Schedule[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<unknown>(null); // Specify error type
+  const [error, setError] = useState<unknown>(null); // Use unknown for error
 
   // Fetch data
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const response = await apiGet(`/foodfish`);
-      console.log("response", response); 
+      console.log("response", response);
       setScheduleData(response as Schedule[]);
     } catch (error) {
       setError(error);
+      console.error("Error fetching schedule data:", error);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const handleError = (error: unknown) => {
+    if (
+      error &&
+      typeof error === "object" &&
+      "response" in error &&
+      error.response &&
+      typeof error.response === "object" &&
+      "data" in error.response
+    ) {
+      const apiError = error as { response: { data: { message: string } } };
+      console.error("API error:", apiError.response.data);
+      alert(`Update failed: ${apiError.response.data.message || "Unknown error"}`);
+    } else if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      alert(`Network error: ${error.message}`);
+    } else {
+      console.error("Unexpected error:", error);
+      alert("An unexpected error occurred.");
+    }
+  };
 
   const submitSchedule = useCallback(async (newSchedule: Omit<Schedule, "id">) => {
     try {
@@ -51,16 +73,6 @@ export const useSchedule = (): UseScheduleReturn => { // Specify branchId type
     }
   }, []);
 
-  const handleError = (error: any) => {
-    if (error.response) {
-      console.error("API error:", error.response.data);
-      alert(`Update failed: ${error.response.data.message || 'Unknown error'}`);
-    } else {
-      console.error("Error message:", error.message);
-      alert(`Network error: ${error.message}`);
-    }
-  };
-  
   const updateSchedule = useCallback(async (id: number, updatedSchedule: Partial<Schedule>) => {
     try {
       const response = await apiPut(`/foodfish/${id}`, updatedSchedule) as { data: Schedule };
@@ -72,8 +84,6 @@ export const useSchedule = (): UseScheduleReturn => { // Specify branchId type
       handleError(error); // Handle error more specifically
     }
   }, []);
-  
-  
 
   const deleteSchedule = useCallback(async (id: number) => {
     try {
@@ -86,8 +96,8 @@ export const useSchedule = (): UseScheduleReturn => { // Specify branchId type
   }, []);
 
   useEffect(() => {
-      fetchData();
-    }, [fetchData]);
+    fetchData();
+  }, [fetchData]);
 
   return { scheduleData, loading, error, submitSchedule, updateSchedule, deleteSchedule };
 };

@@ -9,35 +9,25 @@ import HeaderMobile from '@/components/header-mobile';
 import MarginWidthWrapper from '@/components/margin-width-wrapper';
 import PageWrapper from '@/components/page-wrapper';
 import SideNav from '@/components/side-nav';
-import axios from "axios";
 import { useSchedule } from '@/hooks/useFetchSchedule';
 import { useAlat } from '@/hooks/useFetchAlat';
 
-
-
 export interface Schedule {
-
   onStart: string;
-
   weight: number;
-
-  sensor_id?: string; 
+  sensor_id?: string;
 }
 
-
 export default function Home() {
-  const branchId = localStorage.getItem('branch_id') || '';
-  const userId = localStorage.getItem('user_id');
-
-
+  const branchId = localStorage.getItem('branch_id') || ''; // Gunakan jika branch_id diperlukan
   const { scheduleData } = useSchedule();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [nextFeedingTime, setNextFeedingTime] = useState<string>("");
+  const [nextFeedingTime, setNextFeedingTime] = useState<string>('');
   const [totalFeedingGiven, setTotalFeedingGiven] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(7);
-  const { alatData } = useAlat(branchId as string);
+  const { alatData } = useAlat(branchId);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -49,21 +39,20 @@ export default function Home() {
 
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const calculateNextFeedingTime = (lastTime: string) => {
+  const calculateNextFeedingTime = (lastTime: string, additionalHours: number = 24) => {
     const lastDate = new Date(lastTime);
-    const nextFeedingDate = new Date(lastDate.getTime() + 24 * 60 * 60 * 1000);
-    return nextFeedingDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const nextFeedingDate = new Date(lastDate.getTime() + additionalHours * 60 * 60 * 1000);
+    return nextFeedingDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   useEffect(() => {
     if (scheduleData && scheduleData.length > 0) {
-      // Membalik urutan data agar yang terbaru muncul pertama
-      const reversedData = [...scheduleData].reverse();
-      const lastFeeding = reversedData[0]; // Mengambil data pertama setelah dibalik
-      const nextFeeding = calculateNextFeedingTime(lastFeeding.onStart);
+      const reversedData = [...scheduleData].reverse(); // Data terbaru muncul lebih dulu
+      const lastFeeding = reversedData[0];
+      const nextFeeding = calculateNextFeedingTime(lastFeeding.onStart, 6); // Tambah 6 jam
       setNextFeedingTime(nextFeeding);
 
       const totalFeeding = reversedData.reduce((acc, item) => acc + Number(item.weight || 0), 0);
@@ -74,37 +63,19 @@ export default function Home() {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 
-  // Membalik urutan data untuk menampilkan data terbaru
   const currentItems = scheduleData ? [...scheduleData].reverse().slice(indexOfFirstItem, indexOfLastItem) : [];
 
   const totalPages = Math.ceil(scheduleData?.length / itemsPerPage);
 
-  // Menentukan rentang halaman yang ditampilkan
   const pageRange = 2;
   const startPage = Math.max(currentPage - pageRange, 1);
   const endPage = Math.min(currentPage + pageRange, totalPages);
 
-  const pagesToShow = [];
-  for (let i = startPage; i <= endPage; i++) {
-    pagesToShow.push(i);
-  }
+  const pagesToShow = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
-  // Fungsi untuk menangani klik halaman
-  const handlePageClick = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const nextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
+  const handlePageClick = (page: number) => setCurrentPage(page);
+  const nextPage = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
+  const prevPage = () => currentPage > 1 && setCurrentPage(currentPage - 1);
 
   return (
     <div className="flex bg-primary-color">
@@ -117,7 +88,6 @@ export default function Home() {
             <div className="p-6 bg-primary-color min-h-screen">
               <span className="font-bold text-4xl text-white block text-center md:text-left">Dashboard</span>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-12">
-                {/* Box 1 */}
                 <div className="flex flex-col bg-primary-color rounded-lg text-center text-white p-4 h-full">
                   <div className="bg-secondary-color py-4 rounded-t-lg flex items-center justify-center h-24 px-2">
                     <span className="text-lg break-words whitespace-normal">Pemberian pakan selanjutnya</span>
@@ -127,8 +97,6 @@ export default function Home() {
                     <span className="text-2xl font-bold mt-2">{nextFeedingTime || 'Menunggu data...'}</span>
                   </div>
                 </div>
-
-                {/* Box 2 */}
                 <div className="flex flex-col bg-primary-color rounded-lg text-center text-white p-4 h-full">
                   <div className="bg-secondary-color py-4 rounded-t-lg flex items-center justify-center h-24 px-2">
                     <span className="text-lg break-words whitespace-normal">Pakan yang tersedia</span>
@@ -144,8 +112,6 @@ export default function Home() {
                     </button>
                   </div>
                 </div>
-
-                {/* Box 3 */}
                 <div className="flex flex-col bg-primary-color rounded-lg text-center text-white p-4 h-full">
                   <div className="bg-secondary-color py-4 rounded-t-lg flex items-center justify-center h-24 px-2">
                     <span className="text-lg break-words whitespace-normal">Pakan yang sudah diberikan</span>
@@ -168,9 +134,8 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody>
-                    {currentItems?.map((item, index) => (
-                      <tr key={index}
-                        className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}>
+                    {currentItems.map((item, index) => (
+                      <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? 'bg-tertiary-color' : 'bg-primary-color'}`}>
                         <td className="py-4 px-2">{formatDate(item?.onStart)}</td>
                         <td className="py-4 px-2">{formatTime(item?.onStart)}</td>
                         <td className="py-4 px-2">{item?.weight}</td>
@@ -182,36 +147,6 @@ export default function Home() {
                     ))}
                   </tbody>
                 </table>
-
-                {/* Pagination Links */}
-                <div className="flex justify-end py-4 space-x-2 px-4">
-                  <button
-                    onClick={prevPage}
-                    disabled={currentPage === 1}
-                    className={`px-4 py-2 rounded-md ${currentPage === 1 ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"
-                      }`}
-                  >
-                    <Icon icon="akar-icons:chevron-left" className="w-5 h-5" />
-                  </button>
-                  {pagesToShow.map((page) => (
-                    <button
-                      key={page}
-                      className={`px-4 py-2 rounded-md ${currentPage === page ? "bg-primary-color text-white" : "bg-secondary-color text-white"
-                        }`}
-                      onClick={() => handlePageClick(page)}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                  <button
-                    onClick={nextPage}
-                    disabled={currentPage === totalPages}
-                    className={`px-4 py-2 rounded-md ${currentPage === totalPages ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"
-                      }`}
-                  >
-                    <Icon icon="akar-icons:chevron-right" className="w-5 h-5" />
-                  </button>
-                </div>
               </div>
             </div>
           </PageWrapper>

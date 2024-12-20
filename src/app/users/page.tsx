@@ -1,28 +1,10 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { Icon } from "@iconify/react";
-import Modal from "react-modal";
-import { useUser } from "@/hooks/useFetchUsers";
-import { useBranch } from "@/hooks/useFetchBranch";
-import axios from "axios";
-
-// Menambahkan log untuk debugging
-const axiosInstance = axios.create({
-  baseURL: "http://103.127.138.198:8080/api/",
-});
-
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    console.log('Request URL:', config.url);
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+import React, { useState, useMemo } from 'react';
+import { Icon } from '@iconify/react';
+import Modal from 'react-modal';
+import { useUser } from '@/hooks/useFetchUsers';
+import { useBranch } from '@/hooks/useFetchBranch';
 
 interface User {
   id: number;
@@ -35,6 +17,11 @@ interface User {
   condition: string;
 }
 
+interface Branch {
+  id: number;
+  city: string;
+}
+
 const UsersPage: React.FC = () => {
   const [modal, setModal] = useState({
     modalIsOpen: false,
@@ -42,102 +29,57 @@ const UsersPage: React.FC = () => {
     deleteModalIsOpen: false,
   });
   const { modalIsOpen, isEditing, deleteModalIsOpen } = modal;
-  
 
-  const [newUser, setNewUser] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "",
-    branch_id: "",
-    status: "",
-    condition: "",
-    user_id: 0,
+  const [newUser, setNewUser] = useState<User>({
+    id: 0,
+    name: '',
+    email: '',
+    password: '',
+    role: '',
+    branch_id: 0,
+    status: '',
+    condition: '',
   });
+
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const branchId = localStorage.getItem('branch_id') || '';
+  const userId = localStorage.getItem('user_id') || '';
 
-  const branchId = localStorage.getItem("branch_id");
-  if (!branchId) {
-    alert("Branch ID is not found in localStorage.");
-    return;
-  }
-  const branchIdNumber = Number(branchId);
-  console.log("Branch ID:", branchIdNumber);
-
-  if (isNaN(branchIdNumber)) {
-    alert("Invalid Branch ID.");
-    return;
-  }
-
-
-  const userId = localStorage.getItem("user_id");
-  const { userData, loading, error, submitUser, updateUser, deleteUser, refetch } = useUser(branchId);
-  const { branchData } = useBranch(userId || '');
-  console.log("userData:", userData);
-
-  console.log("Branch ID:", branchId);
-
-  useEffect(() => {
-    refetch();
-  }, []);
+  const { userData, submitUser, updateUser, deleteUser, refetch } = useUser(branchId);
+  const { branchData } = useBranch(userId);
 
   const openModal = (user?: User) => {
-    setModal({ ...modal, modalIsOpen: true });
     if (user) {
-      setCurrentUserId(Number(user.id));
-      console.log("User ID:", user.branch_id);
-      const updatedUser = {
-        name: user.name,
-        email: user.email,
-        password: user.password,
-        role: user.role,
-        branch_id: branchId || '',
-        status: user.status,
-        condition: user.condition,
-        user_id: Number(userId) || 0,
-      };
-      setNewUser(updatedUser);
-      setModal({ ...modal, isEditing: true, modalIsOpen: true });
+      setCurrentUserId(user.id);
+      setNewUser(user);
+      setModal({ modalIsOpen: true, isEditing: true, deleteModalIsOpen: false });
     } else {
-      if (!userId || !branchId) {
-        alert("User ID and branch ID not found in localStorage");
-        return;
-      }
-      setModal({ ...modal, isEditing: false, modalIsOpen: true });
       setNewUser({
-        name: "",
-        email: "",
-        password: "",
-        role: "",
-        branch_id: branchId || '',
-        status: "",
-        condition: "",
-        user_id: Number(userId),
+        id: 0,
+        name: '',
+        email: '',
+        password: '',
+        role: '',
+        branch_id: Number(branchId),
+        status: '',
+        condition: '',
       });
+      setModal({ modalIsOpen: true, isEditing: false, deleteModalIsOpen: false });
     }
   };
 
-  const closeModal = () => {
-    setModal({ ...modal, modalIsOpen: false });
-  };
-
+  const closeModal = () => setModal({ ...modal, modalIsOpen: false });
   const openDeleteModal = (userId: number) => {
     setCurrentUserId(userId);
     setModal({ ...modal, deleteModalIsOpen: true });
   };
 
-  const closeDeleteModal = () => {
-    setModal({ ...modal, deleteModalIsOpen: false });
-  };
+  const closeDeleteModal = () => setModal({ ...modal, deleteModalIsOpen: false });
 
   const handleDelete = async () => {
     if (currentUserId !== null) {
-      try {
-        await deleteUser(currentUserId);
-        refetch();
-      } catch (error) {
-        console.error("Error deleting user:", error);
-      }
+      await deleteUser(currentUserId);
+      refetch();
     }
     closeDeleteModal();
   };
@@ -149,41 +91,33 @@ const UsersPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Ambil branchId
-    const branchId = localStorage.getItem("branch_id");
-    console.log("Mengirim branchId:", branchId);
-
-    // Pastikan branchId tidak null atau undefined
-    if (!branchId) {
-      console.error("Branch ID tidak ditemukan di localStorage.");
-      return;
+    if (isEditing && currentUserId) {
+      await updateUser(currentUserId, newUser);
+    } else {
+      await submitUser(newUser);
     }
-
-    const userPayload = {
-      ...newUser,
-      branch_id: Number(branchId),
-    };
-
-    try {
-      if (isEditing && currentUserId) {
-        await updateUser(currentUserId, userPayload);
-        console.log("Updating user:", userPayload);
-      } else {
-        // Menambahkan pengguna baru
-        await submitUser(userPayload);
-        console.log("Submitting new user:", userPayload);
-      }
-      closeModal();
-      refetch();
-    } catch (error) {
-      console.error("Error submitting user:", error);
-      alert("Terjadi kesalahan saat mengirim data.");
-    }
+    closeModal();
+    refetch();
   };
 
+  const userItems = useMemo(() => {
+    return userData?.sort((a, b) => b.id - a.id) || [];
+  }, [userData]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 7;
+  const totalPages = Math.ceil(userItems.length / itemsPerPage);
+  const currentItems = userItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+  const handlePageClick = (page: number) => setCurrentPage(page);
+  const prevPage = () => currentPage > 1 && setCurrentPage(currentPage - 1);
+  const nextPage = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
 
+  const pageRange = 2;
+  const startPage = Math.max(1, currentPage - pageRange);
+  const endPage = Math.min(totalPages, currentPage + pageRange);
+
+  const pagesToShow = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
   return (
     <div className="p-6 bg-primary-color min-h-screen">
@@ -208,8 +142,11 @@ const UsersPage: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {userData && userData.length > 0 ? (
-              userData.map((item, index) => {
+            {currentItems && currentItems?.length > 0 ? (
+              currentItems?.map((item, index) => {
+
+                const branchArray = branchData && Array.isArray(branchData) ? branchData : Object.values(branchData || {});
+                const branchCity = branchArray.find((branch: any) => branch && branch.id === item.branch_id)?.city || "Unknown Branch";
                 return (
 
                   <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}>
@@ -217,7 +154,7 @@ const UsersPage: React.FC = () => {
                     <td className="py-4 px-2">{item?.name || "No name"}</td>
                     <td className="py-4 px-2">{item?.email || "No email"}</td>
                     <td className="py-4 px-2">{item?.role || "No role"}</td>
-                    <td className="py-4 px-2">{branchData?.city}</td>
+                    <td className="py-4 px-2">{branchCity}</td>
                     <td className="py-4 px-2 flex justify-center space-x-2">
                       <button className="text-white" onClick={() => openModal(item)}>
                         <Icon icon="mdi:pencil" className="w-6 h-6" />
@@ -237,6 +174,34 @@ const UsersPage: React.FC = () => {
             )}
           </tbody>
         </table>
+        <div className="flex justify-end py-4 space-x-2 px-4">
+          <button
+            onClick={prevPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-md ${currentPage === 1 ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"
+              }`}
+          >
+            <Icon icon="akar-icons:chevron-left" className="w-5 h-5" />
+          </button>
+          {pagesToShow.map((page) => (
+            <button
+              key={page}
+              className={`px-4 py-2 rounded-md ${currentPage === page ? "bg-primary-color text-white" : "bg-secondary-color text-white"
+                }`}
+              onClick={() => handlePageClick(page)}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            onClick={nextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-md ${currentPage === totalPages ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"
+              }`}
+          >
+            <Icon icon="akar-icons:chevron-right" className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Modal untuk Create/Edit */}
@@ -301,7 +266,7 @@ const UsersPage: React.FC = () => {
                 <input
                   type="number"
                   name="branch_id"
-                  value={branchIdNumber}
+                  value={newUser.branch_id}
                   onChange={handleChange}
                   className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
                   required

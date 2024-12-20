@@ -28,8 +28,8 @@ export const useAlat = (branchId: string | number): UseAlatReturn => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await apiGet(`sensors/branch/${branchId}`);
-      setAlatData(response);
+      const response = await apiGet(`/sensor`);
+      setAlatData(response as Alat[]);
       setError(null);
     } catch (error) {
       console.error("Error fetching alat data:", error);
@@ -37,7 +37,7 @@ export const useAlat = (branchId: string | number): UseAlatReturn => {
     } finally {
       setLoading(false);
     }
-  }, [branchId]);
+  }, []);
 
   const submitAlat = useCallback(
     async (newAlat: Omit<Alat, "id">) => {

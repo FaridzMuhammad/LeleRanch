@@ -48,14 +48,13 @@ const AlatPage: React.FC = () => {
     latitude: number;
     longitude: number;
     isOn: boolean;
-    user_id?: number; // Make user_id optional if it's not always present
+    user_id?: number;
   }
 
   const branchId = localStorage.getItem('branch_id') || '';
   const userId = localStorage.getItem('user_id');
   const { alatData, submitAlat, updateAlat, deleteAlat } = useAlat(branchId as string);
   const { branchData } = useBranch(userId || '');
-  console.log('alatData:', alatData);
 
   const openModal = (sensor: Alat | null = null) => {
     setModal({ ...modal, isEditing: !!sensor, modalIsOpen: true });
@@ -64,15 +63,14 @@ const AlatPage: React.FC = () => {
       const sanitizedValue = {
         user_id: userId || '',
       };
-      const newSensorData = {
+      setNewSensor({
         code: sensor.code,
         branch_id: sensor.branch_id,
         latitude: sensor.latitude.toString(),
         longitude: sensor.longitude.toString(),
         isOn: sensor.isOn,
         user_id: sanitizedValue.user_id,
-      };
-      setNewSensor(newSensorData);
+      });
     } else {
       if (!userId || !branchId) {
         alert('User ID or Branch ID not found');
@@ -89,7 +87,6 @@ const AlatPage: React.FC = () => {
     }
   };
 
-
   const closeModal = () => {
     setModal({ ...modal, modalIsOpen: false });
   };
@@ -103,7 +100,6 @@ const AlatPage: React.FC = () => {
     setModal({ ...modal, deleteModalIsOpen: false });
   };
 
-  // Handle deleting a sensor
   const handleDelete = async () => {
     if (currentSensorId !== null) {
       try {
@@ -115,7 +111,6 @@ const AlatPage: React.FC = () => {
     closeDeleteModal();
   };
 
-  // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewSensor({ ...newSensor, [e.target.name]: e.target.value });
   };
@@ -128,26 +123,19 @@ const AlatPage: React.FC = () => {
       return;
     }
 
-    // Pastikan bahwa latitude dan longitude dikirim dalam tipe number
     const updatedAlat = {
       ...newSensor,
       latitude: parseFloat(newSensor.latitude),
       longitude: parseFloat(newSensor.longitude),
     };
 
-    console.log('Data yang akan dikirim:', updatedAlat); // Log data sebelum dikirimkan
-
     try {
       if (isEditing) {
-        // Update sensor
         if (currentSensorId !== null) {
-          const response = await updateAlat(currentSensorId, updatedAlat); // Call update function
-          console.log('Response from updateAlat:', response);  // Log response
+          await updateAlat(currentSensorId, updatedAlat);
         }
       } else {
-        // Create new sensor
-        const response = await submitAlat(updatedAlat); // Call create function
-        console.log('Response from submitAlat:', response);  // Log response
+        await submitAlat(updatedAlat);
       }
       closeModal();
     } catch (error) {
@@ -155,6 +143,40 @@ const AlatPage: React.FC = () => {
       alert('Failed to submit sensor');
     }
   };
+
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 7;
+
+  const alatItems = React.useMemo(() => {
+    if (!alatData) return [];
+    return [...alatData].sort((a, b) => b.id - a.id);
+  }, [alatData]);
+
+  const totalPages = Math.ceil(alatItems.length / itemsPerPage);
+
+  const currentItems = alatItems.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const pageRange = 2;
+  const startPage = Math.max(currentPage - pageRange, 1);
+  const endPage = Math.min(currentPage + pageRange, totalPages);
+
+  const pagesToShow = Array.from(
+    { length: endPage - startPage + 1 },
+    (_, index) => startPage + index
+  );
+
+  const handlePageClick = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const nextPage = () => handlePageClick(currentPage + 1);
+  const prevPage = () => handlePageClick(currentPage - 1);
+
 
   return (
     <div className="p-6 bg-primary-color min-h-screen">
@@ -180,25 +202,31 @@ const AlatPage: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {alatData && alatData?.length > 0 ? (
-              alatData.map((item: Alat, index) => (
-                <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? 'bg-tertiary-color' : 'bg-primary-color'}`}>
-                  <td className="py-4 px-2">{item?.id || 'No ID'}</td>
-                  <td className="py-4 px-2">{item?.code || 'No Code'}</td>
-                  <td className="py-4 px-2">{branchData?.city || 'No Branch'}</td>
-                  <td className="py-4 px-2">{item?.latitude || 'No Latitude'}</td>
-                  <td className="py-4 px-2">{item?.longitude || 'No Longitude'}</td>
-                  <td className="py-4 px-2">{item?.isOn ? 'Yes' : 'No'}</td>
-                  <td className="py-4 px-2 flex justify-center space-x-2">
-                    <button className="text-white" onClick={() => openModal(item)}>
-                      <Icon icon="mdi:pencil" className="w-6 h-6" />
-                    </button>
-                    <button className="text-red-700" onClick={() => openDeleteModal(item?.id)}>
-                      <Icon icon="mdi:delete" className="w-6 h-6" />
-                    </button>
-                  </td>
-                </tr>
-              ))
+
+            {currentItems && currentItems?.length > 0 ? (
+              currentItems?.map((item: Alat, index) => {
+                const branchArray = branchData && Array.isArray(branchData) ? branchData : Object.values(branchData || {});
+                const branchCity = branchArray.find((branch: { id: string; city: string }) => branch && branch.id === item.branch_id)?.city || "Unknown Branch";
+                 
+                return (
+                  <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? 'bg-tertiary-color' : 'bg-primary-color'}`}>
+                    <td className="py-4 px-2">{item?.id || 'No ID'}</td>
+                    <td className="py-4 px-2">{item?.code || 'No Code'}</td>
+                    <td className="py-4 px-2">{branchCity}</td>
+                    <td className="py-4 px-2">{item?.latitude || 'No Latitude'}</td>
+                    <td className="py-4 px-2">{item?.longitude || 'No Longitude'}</td>
+                    <td className="py-4 px-2">{item?.isOn ? 'Yes' : 'No'}</td>
+                    <td className="py-4 px-2 flex justify-center space-x-2">
+                      <button className="text-white" onClick={() => openModal(item)}>
+                        <Icon icon="mdi:pencil" className="w-6 h-6" />
+                      </button>
+                      <button className="text-red-700" onClick={() => openDeleteModal(item?.id)}>
+                        <Icon icon="mdi:delete" className="w-6 h-6" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan={7} className="py-4 px-2 text-center">
@@ -208,6 +236,34 @@ const AlatPage: React.FC = () => {
             )}
           </tbody>
         </table>
+        <div className="flex justify-end py-4 space-x-2 px-4">
+          <button
+            onClick={prevPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-md ${currentPage === 1 ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"
+              }`}
+          >
+            <Icon icon="akar-icons:chevron-left" className="w-5 h-5" />
+          </button>
+          {pagesToShow.map((page) => (
+            <button
+              key={page}
+              className={`px-4 py-2 rounded-md ${currentPage === page ? "bg-primary-color text-white" : "bg-secondary-color text-white"
+                }`}
+              onClick={() => handlePageClick(page)}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            onClick={nextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-md ${currentPage === totalPages ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"
+              }`}
+          >
+            <Icon icon="akar-icons:chevron-right" className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Create/Edit Modal */}

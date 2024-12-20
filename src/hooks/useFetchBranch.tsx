@@ -18,7 +18,7 @@ interface UseBranchReturn {
     refetch: () => Promise<void>;
 }
 
-export const useBranch = (user_id: string): UseBranchReturn => {
+export const useBranch = (): UseBranchReturn => {
     const [branchData, setBranchData] = useState<Branch[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<unknown>(null);
@@ -26,8 +26,8 @@ export const useBranch = (user_id: string): UseBranchReturn => {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await apiGet<Branch[]>(`/branch/${user_id}`);
-            setBranchData(response);
+            const response = await apiGet(`/branch`);
+            setBranchData(response as Branch[]);
             setError(null);
         } catch (error) {
             console.error('Error fetching branch data:', error);

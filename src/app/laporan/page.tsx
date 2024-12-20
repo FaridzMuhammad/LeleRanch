@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useAlat } from "@/hooks/useFetchAlat";
@@ -11,31 +11,36 @@ import { Icon } from "@iconify/react";
 
 // Membuat instance Axios dengan baseURL
 const axiosInstance = axios.create({
-  baseURL: "http://103.127.138.198:8080/api/", // Sesuaikan dengan URL backend Anda
+  baseURL: "http://103.127.138.198:8080/api/",
 });
 
-// Menambahkan token ke setiap request secara otomatis
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token"); // Ambil token dari localStorage
+    const token = localStorage.getItem("token");
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`; // Tambahkan token ke header
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
+interface Laporan {
+  id: number;
+  date: string | number | Date;
+  description: string;
+  user_id: string;
+  sensor_id: string;
+  branch_id: string;
+}
 
-
-const LaporanPage = () => {
+const LaporanPage: React.FC = () => {
   const [modal, setModal] = useState({
     modalIsOpen: false,
     deleteModalIsOpen: false,
     isEditing: false,
-  })
+  });
+
   const { modalIsOpen, isEditing, deleteModalIsOpen } = modal;
   const [currentReportId, setCurrentReportId] = useState<number | null>(null);
   const [newReport, setNewReport] = useState({
@@ -46,64 +51,39 @@ const LaporanPage = () => {
     branch_id: "",
   });
 
-  interface Laporan {
-    id: number;
-    date: string | number | Date;
-    description: string;
-    user_id: string;
-    sensor_id: string;
-    branch_id: string;
-  }
+  const branchId = localStorage.getItem("branch_id") || "";
+  const userId = localStorage.getItem("user_id");
 
-  interface Sensor {
-    id: number;
-    code: string;
-  }
-
-  const branchId = localStorage.getItem('branch_id') || '';
-  const userId = localStorage.getItem('user_id');
-  console.log("Branch ID:", branchId);
-  console.log("User ID:", userId);
-
-  const { alatData} = useAlat(branchId as string);
-  const { laporanData, submitLaporan } = useLaporan(branchId as string);
-  const { userData } = useUser(branchId as string);
-  const { branchData } = useBranch(userId || '');
-  console.log("Alat Data:", alatData);
-
-
+  const { alatData } = useAlat(branchId);
+  const { laporanData, submitLaporan } = useLaporan(branchId);
+  const { userData } = useUser(branchId);
+  const { branchData } = useBranch(userId || "");
 
   const openModal = (laporan: Laporan | null = null) => {
-    setModal({ ...modal, modalIsOpen: true });
+    setModal({ modalIsOpen: true, deleteModalIsOpen: false, isEditing: !!laporan });
     if (laporan) {
       setCurrentReportId(laporan.id);
       setNewReport({
         tanggal: laporan.date ? new Date(laporan.date).toISOString().split("T")[0] : "",
-        catatan: laporan.description || "", // Pastikan catatan ada, jika null ganti dengan string kosong
+        catatan: laporan.description || "",
         user_id: laporan.user_id,
         sensor_id: laporan.sensor_id,
         branch_id: laporan.branch_id,
       });
-      const updatedModal = { ...modal, isEditing: true };
-      setModal(updatedModal);
     } else {
       if (!userId || !branchId) {
         alert("User ID atau Branch ID tidak ditemukan");
         return;
       }
-      setModal({ ...modal, isEditing: false });
       setNewReport({
         tanggal: "",
         catatan: "",
         user_id: userId,
         sensor_id: "",
-        branch_id: "",
+        branch_id: branchId,
       });
-      const updatedModal = { ...modal, isEditing: false, modalIsOpen: true };
-      setModal(updatedModal);
-      console.log("newReport", newReport);
     }
-  }
+  };
 
   const closeModal = () => {
     setModal({ ...modal, modalIsOpen: false });
@@ -122,62 +102,86 @@ const LaporanPage = () => {
     if (currentReportId !== null) {
       try {
         await axiosInstance.delete(`history/${currentReportId}`);
-        laporanData; // Refresh the report list after deletion
       } catch (error) {
         console.error("Error deleting report:", error);
       }
     }
     closeDeleteModal();
   };
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     setNewReport({ ...newReport, [e.target.name]: e.target.value });
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!newReport.tanggal) {
-      console.error("Tanggal tidak boleh kosong");
+      alert("Tanggal tidak boleh kosong.");
       return;
     }
 
-    // Pastikan catatan dikirim sebagai description
     const reportPayload = {
       ...newReport,
       date: newReport.tanggal,
       description: newReport.catatan,
     };
 
-    // Log untuk memverifikasi payload yang dikirim
-    console.log("Report Payload:", reportPayload);
-
-    if (isEditing && currentReportId !== null) {
-      // Update existing report
-      try {
-        const response = await axiosInstance.put(`history/${currentReportId}`, reportPayload);
-
-        console.log("Update Response:", response.data);
-
-        laporanData; // Refresh the report list after update
-      } catch (error) {
-        console.error("Error updating report:", error);
-      }
-    } else {
-      // Create new report
-      try {
+    try {
+      if (isEditing && currentReportId !== null) {
+        await axiosInstance.put(`history/${currentReportId}`, reportPayload);
+      } else {
         await submitLaporan(reportPayload);
-        console.log("response", laporanData);
-        laporanData;
-      } catch (error) {
-        console.error("Error creating report:", error);
       }
+    } catch (error) {
+      console.error("Error submitting report:", error);
     }
     closeModal();
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 7;
+  
+  const sortedLaporanData = React.useMemo(() => {
+    if (!laporanData) return [];
+    return [...laporanData].sort((a, b) => b.id - a.id); // Sort descending by 'id'
+  }, [laporanData]);
+  
+  const totalPages = Math.ceil(sortedLaporanData.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = sortedLaporanData.slice(indexOfFirstItem, indexOfLastItem);
+  
+  const handlePageClick = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+  
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+  
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+  
+  const pageRange = 2;
+  const startPage = Math.max(1, currentPage - pageRange);
+  const endPage = Math.min(totalPages, currentPage + pageRange);
+
+  const pagesToShow = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
   return (
     <div className="p-6 bg-primary-color min-h-screen">
       <div className="flex justify-between items-center mb-5">
-        <h1 className="text-4xl font-bold text-white text-center md:text-left">Laporan</h1>
+        <h1 className="text-4xl font-bold text-white">Laporan</h1>
         <button
           onClick={() => openModal()}
           className="bg-tertiary-color text-white p-2 px-4 rounded-lg flex items-center"
@@ -187,7 +191,7 @@ const LaporanPage = () => {
         </button>
       </div>
 
-      <div className="mt-24 bg-secondary-color rounded-lg text-white shadow-md overflow-x-auto">
+      <div className="bg-secondary-color rounded-lg text-white shadow-md overflow-x-auto mt-6">
         <table className="w-full text-center">
           <thead>
             <tr>
@@ -196,54 +200,57 @@ const LaporanPage = () => {
               <th className="py-4 px-2">Sensor</th>
               <th className="py-4 px-2">Branch</th>
               <th className="py-4 px-2">Catatan</th>
-              <th className="py-4 px-2">Action</th>
             </tr>
           </thead>
           <tbody>
-            {laporanData && laporanData.length > 0 ? (
-              laporanData.map((item: Laporan, index) => {
-                // Ambil nama pengguna dan nama cabang dari localStorage
-
-
-                const user = localStorage.getItem("user_id");
-                const branch = localStorage.getItem("branch_id");
-
-                const userName = userData.find((user) => user.id === item.user_id)?.name || "Unknown User";
-                // const branchCity = branchData.find((branch) => branch.id === item.branch_id)?.city || "Unknown Branch";
-                const alatCode = alatData.find((sensor) => sensor.id === item.sensor_id)?.code || "Unknown Sensor";
-                console.log("alatData", alatData);
-
-                return (
-                  <tr
-                    key={index}
-                    className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}
-                  >
-                    <td className="py-4 px-2">{new Date(item?.date).toLocaleDateString()}</td>
-                    <td className="py-4 px-2">{userName}</td>
-                    <td className="py-4 px-2">{alatCode}</td>
-                    <td className="py-4 px-2">{branchData?.city}</td>
-                    <td className="py-4 px-2">{item?.description || "No Catatan"}</td>
-                    <td className="py-4 px-2 flex justify-center space-x-2">
-                      <button className="text-white" onClick={() => openModal(item)}>
-                        <Icon icon="mdi:pencil" className="w-6 h-6" />
-                      </button>
-                      <button className="text-red-700" onClick={() => openDeleteModal(item?.id)}>
-                        <Icon icon="mdi:delete" className="w-6 h-6" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan={6} className="py-4 px-2 text-center">
-                  No reports available
+            {currentItems.map((item, index) => (
+              <tr
+                key={index}
+                className={`border-t border-tertiary-color ${
+                  index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"
+                }`}
+              >
+                <td className="py-4 px-2">{new Date(item.date).toLocaleDateString()}</td>
+                <td className="py-4 px-2">
+                  {userData.find((user) => user.id === item.user_id)?.name || "Unknown User"}
                 </td>
+                <td className="py-4 px-2">
+                  {alatData.find((sensor) => sensor.id === item.sensor_id)?.code || "Unknown Sensor"}
+                </td>
+                <td className="py-4 px-2">
+                  {branchData.find((branch) => branch.id === item.branch_id)?.city || "Unknown Branch"}
+                </td>
+                <td className="py-4 px-2">{item.description}</td>
               </tr>
-            )}
+            ))}
           </tbody>
-
         </table>
+
+        <div className="flex justify-end py-4 space-x-2 px-4">
+          <button
+            onClick={prevPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-md ${currentPage === 1 ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"}`}
+          >
+            <Icon icon="akar-icons:chevron-left" className="w-5 h-5" />
+          </button>
+          {pagesToShow.map((page) => (
+            <button
+              key={page}
+              className={`px-4 py-2 rounded-md ${currentPage === page ? "bg-primary-color text-white" : "bg-secondary-color text-white"}`}
+              onClick={() => handlePageClick(page)}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            onClick={nextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-md ${currentPage === totalPages ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"}`}
+          >
+            <Icon icon="akar-icons:chevron-right" className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Create/Edit Modal */}

@@ -3,58 +3,17 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useUser } from '@/hooks/useFetchUsers';
-const ProfilePage = () => {
+
+const ProfilePage: React.FC = () => {
   const [error, setError] = useState('');
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
+
   const branchId = localStorage.getItem('branch_id') || '';
   const userId = localStorage.getItem('user_id');
-  const { userData, loading, error: userError, submitUser, updateUser, deleteUser, resetPassword, refetch } = useUser(branchId);
 
-  const verifyToken = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('Token not found');
-    }
-
-    try {
-      const response = await fetch('http://103.127.138.198:8080/api/verify-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Invalid token');
-      }
-    } catch (err) {
-      console.error('Token verification failed:', err);
-      throw err;
-    }
-  };
-
-
-  const handleResetPassword = async () => {
-    try {
-      await verifyToken(); // Verifikasi token sebelum melakukan reset
-      await resetPassword(Number(userId));
-      console.log('Password reset successful');
-    } catch (err) {
-      if (err instanceof Error && err.message === 'Invalid token') {
-        console.log('Token invalid. Please login again.');
-        localStorage.removeItem('token');
-        window.location.href = '/login'; // Arahkan ke halaman login
-      } else {
-        console.error('Failed to reset password:', err);
-        setError('Failed to reset password. Please try again.');
-      }
-    }
-  };
-
+  const { userData, updateUser, refetch } = useUser(branchId);
 
   const openEditProfileModal = () => {
     const user = userData.find((user) => user.id === Number(userId));
@@ -92,6 +51,7 @@ const ProfilePage = () => {
 
   return (
     <div className="flex flex-col items-center min-h-screen p-8">
+      {/* Profile Header */}
       <div className="text-center mb-8">
         <Image
           src="/logo.png"
@@ -103,10 +63,15 @@ const ProfilePage = () => {
         <h1 className="text-4xl font-bold text-white">Lele Ranch</h1>
       </div>
 
+      {/* Profile Information */}
       <div className="w-full md:w-2/3 lg:w-1/2 text-white bg-secondary-color shadow-md rounded-lg p-6">
-        <h2 className="text-2xl font-semibold  mb-4">Informasi Kontak</h2>
-        <p className="text-lg mb-2"><strong>Email:</strong> {userEmail}</p>
-        <p className="text-lg mb-2"><strong>Nama: </strong> {userName}</p>
+        <h2 className="text-2xl font-semibold mb-4">Informasi Kontak</h2>
+        <p className="text-lg mb-2">
+          <strong>Email:</strong> {userEmail}
+        </p>
+        <p className="text-lg mb-2">
+          <strong>Nama: </strong> {userName}
+        </p>
 
         <button
           className="mt-8 bg-tertiary-color text-white px-6 py-3 rounded-lg hover:bg-[#2f7099] w-full"
@@ -114,20 +79,14 @@ const ProfilePage = () => {
         >
           Edit Profile
         </button>
-
-        {/* <button
-          className="mt-8 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-800 w-full"
-          onClick={handleResetPassword}
-        >
-          Reset Password
-        </button> */}
       </div>
 
+      {/* Edit Profile Modal */}
       {isEditProfileModalOpen && (
         <div
           id="modal-overlay"
           className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-          onClick={() => setIsEditProfileModalOpen(false)}
+          onClick={closeEditProfileModal}
         >
           <div
             className="bg-secondary-color p-8 rounded-lg max-w-xl w-full text-black"
