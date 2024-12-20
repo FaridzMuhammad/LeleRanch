@@ -140,7 +140,10 @@ export default function Home() {
                         <td className="py-4 px-2">{formatTime(item?.onStart)}</td>
                         <td className="py-4 px-2">{item?.weight}</td>
                         <td className="py-4 px-2">{item?.sensor_id
-                          ? alatData?.filter(alat => alat?.id === item?.sensor_id).map(alat => alat?.code).join(", ")
+                          ? alatData
+                            ?.filter(alat => alat?.id === Number(item?.sensor_id)) 
+                            .map(alat => alat?.code)
+                            .join(", ")
                           : null}
                         </td>
                       </tr>
