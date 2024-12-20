@@ -8,7 +8,7 @@ import { useBranch } from '@/hooks/useFetchBranch';
 
 interface User {
   id: number;
-  user_id?: string; // Make it optional since we add it during submission
+  user_id?: number; // Make it optional since we add it during submission
   name: string;
   email: string;
   password: string;
@@ -91,12 +91,12 @@ const UsersPage: React.FC = () => {
     e.preventDefault();
   
     if (isEditing && currentUserId) {
-      await updateUser(currentUserId, { ...newUser, user_id: Number(newUser.user_id) });
+      await updateUser(currentUserId, newUser);
     } else {
       const { id, ...createUserData } = newUser;
       await submitUser({
         ...createUserData,
-        user_id: Number(localStorage.getItem('user_id')) || 0 // Get user_id from localStorage and convert to number
+        user_id: Number(localStorage.getItem('user_id')) || 0
       });
     }
     closeModal();
