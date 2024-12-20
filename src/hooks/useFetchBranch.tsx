@@ -18,7 +18,7 @@ interface UseBranchReturn {
     refetch: () => Promise<void>;
 }
 
-export const useBranch = (): UseBranchReturn => {
+export const useBranch = (userId: string): UseBranchReturn => {
     const [branchData, setBranchData] = useState<Branch[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<unknown>(null);
