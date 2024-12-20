@@ -206,8 +206,8 @@ const AlatPage: React.FC = () => {
             {currentItems && currentItems?.length > 0 ? (
               currentItems?.map((item: Alat, index) => {
                 const branchCity =
-                  branchData?.find((branch: { id: string; city: string }) => branch.id === item.branch_id)
-                    ?.city || "Unknown Branch";
+                  branchData?.find((branch: { id: number; city: string }) => branch.id === Number(item.branch_id))
+                    ?.city || 'Unknown Branch';
                  
                 return (
                   <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? 'bg-tertiary-color' : 'bg-primary-color'}`}>
