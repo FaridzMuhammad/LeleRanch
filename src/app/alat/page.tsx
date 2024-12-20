@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { Icon } from '@iconify/react';
 import Modal from 'react-modal';
-import axios from 'axios';
 import { useAlat } from '@/hooks/useFetchAlat';
 import { useBranch } from '@/hooks/useFetchBranch';
 
