@@ -57,7 +57,7 @@ const LaporanPage: React.FC = () => {
   const { alatData } = useAlat(branchId);
   const { laporanData, submitLaporan } = useLaporan(branchId);
   const { userData } = useUser(branchId);
-  const { branchData } = useBranch(userId || "");
+  const { branchData } = useBranch();
 
   const openModal = (laporan: Laporan | null = null) => {
     setModal({ modalIsOpen: true, deleteModalIsOpen: false, isEditing: !!laporan });
@@ -212,13 +212,13 @@ const LaporanPage: React.FC = () => {
               >
                 <td className="py-4 px-2">{new Date(item.date).toLocaleDateString()}</td>
                 <td className="py-4 px-2">
-                  {userData.find((user) => user.id === item.user_id)?.name || "Unknown User"}
+                  {userData.find((user) => user.id === Number(item.user_id))?.name || "Unknown User"}
                 </td>
                 <td className="py-4 px-2">
-                  {alatData.find((sensor) => sensor.id === item.sensor_id)?.code || "Unknown Sensor"}
+                  {alatData.find((sensor) => sensor.id === Number(item.sensor_id))?.code || "Unknown Sensor"}
                 </td>
                 <td className="py-4 px-2">
-                  {branchData.find((branch) => branch.id === item.branch_id)?.city || "Unknown Branch"}
+                  {branchData.find((branch) => branch.id === Number(item.branch_id))?.city || "Unknown Branch"}
                 </td>
                 <td className="py-4 px-2">{item.description}</td>
               </tr>
