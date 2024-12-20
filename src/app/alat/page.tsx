@@ -54,7 +54,7 @@ const AlatPage: React.FC = () => {
   const branchId = localStorage.getItem('branch_id') || '';
   const userId = localStorage.getItem('user_id');
   const { alatData, submitAlat, updateAlat, deleteAlat } = useAlat(branchId as string);
-  const { branchData } = useBranch(userId || '');
+  const { branchData } = useBranch();
 
   const openModal = (sensor: Alat | null = null) => {
     setModal({ ...modal, isEditing: !!sensor, modalIsOpen: true });
@@ -205,8 +205,9 @@ const AlatPage: React.FC = () => {
 
             {currentItems && currentItems?.length > 0 ? (
               currentItems?.map((item: Alat, index) => {
-                const branchArray = branchData && Array.isArray(branchData) ? branchData : Object.values(branchData || {});
-                const branchCity = branchArray.find((branch: { id: string; city: string }) => branch && branch.id === item.branch_id)?.city || "Unknown Branch";
+                const branchCity =
+                  branchData?.find((branch: { id: string; city: string }) => branch.id === item.branch_id)
+                    ?.city || "Unknown Branch";
                  
                 return (
                   <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? 'bg-tertiary-color' : 'bg-primary-color'}`}>
