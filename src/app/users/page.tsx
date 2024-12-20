@@ -8,6 +8,7 @@ import { useBranch } from '@/hooks/useFetchBranch';
 
 interface User {
   id: number;
+  user_id?: string; // Make it optional since we add it during submission
   name: string;
   email: string;
   password: string;
@@ -31,7 +32,7 @@ const UsersPage: React.FC = () => {
   const userId = localStorage.getItem('user_id') || '';
 
   const [newUser, setNewUser] = useState<User>({
-    id: 0,  // This will be ignored when creating a new user
+    id: 0,
     name: '',
     email: '',
     password: '',
@@ -90,11 +91,13 @@ const UsersPage: React.FC = () => {
     e.preventDefault();
   
     if (isEditing && currentUserId) {
-      await updateUser(currentUserId, newUser);
+      await updateUser(currentUserId, { ...newUser, user_id: Number(newUser.user_id) });
     } else {
-      // Create a new object without the id field
       const { id, ...createUserData } = newUser;
-      await submitUser(createUserData);
+      await submitUser({
+        ...createUserData,
+        user_id: Number(localStorage.getItem('user_id')) || 0 // Get user_id from localStorage and convert to number
+      });
     }
     closeModal();
     refetch();
