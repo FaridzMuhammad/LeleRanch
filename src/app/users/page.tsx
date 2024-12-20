@@ -17,6 +17,8 @@ interface User {
   condition: string;
 }
 
+type CreateUserInput = Omit<User, 'id'>;
+
 const UsersPage: React.FC = () => {
   const [modal, setModal] = useState({
     modalIsOpen: false,
@@ -24,21 +26,22 @@ const UsersPage: React.FC = () => {
     deleteModalIsOpen: false,
   });
   const { modalIsOpen, isEditing, deleteModalIsOpen } = modal;
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const branchId = localStorage.getItem('branch_id') || '';
+  const userId = localStorage.getItem('user_id') || '';
 
   const [newUser, setNewUser] = useState<User>({
-    id: 0,
+    id: 0,  // This will be ignored when creating a new user
     name: '',
     email: '',
     password: '',
     role: '',
-    branch_id: 0,
+    branch_id: Number(branchId),
     status: '',
     condition: '',
   });
 
-  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const branchId = localStorage.getItem('branch_id') || '';
-  const userId = localStorage.getItem('user_id') || '';
+
 
   const { userData, submitUser, updateUser, deleteUser, refetch } = useUser(branchId);
   const { branchData } = useBranch(userId as string);
@@ -85,11 +88,13 @@ const UsersPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+  
     if (isEditing && currentUserId) {
       await updateUser(currentUserId, newUser);
     } else {
-      await submitUser(newUser);
+      // Create a new object without the id field
+      const { id, ...createUserData } = newUser;
+      await submitUser(createUserData);
     }
     closeModal();
     refetch();
