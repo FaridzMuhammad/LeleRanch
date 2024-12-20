@@ -17,11 +17,6 @@ interface User {
   condition: string;
 }
 
-interface Branch {
-  id: number;
-  city: string;
-}
-
 const UsersPage: React.FC = () => {
   const [modal, setModal] = useState({
     modalIsOpen: false,
@@ -144,9 +139,9 @@ const UsersPage: React.FC = () => {
           <tbody>
             {currentItems && currentItems?.length > 0 ? (
               currentItems?.map((item, index) => {
-
-                const branchArray = branchData && Array.isArray(branchData) ? branchData : Object.values(branchData || {});
-                const branchCity = branchArray.find((branch: any) => branch && branch.id === item.branch_id)?.city || "Unknown Branch";
+                const branchCity =
+                  branchData?.find((branch: { id: number; city: string }) => branch.id === item.branch_id)
+                    ?.city || 'Unknown Branch';
                 return (
 
                   <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}>
