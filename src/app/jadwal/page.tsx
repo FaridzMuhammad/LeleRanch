@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import Modal from "react-modal";
 import { useSchedule } from "@/hooks/useFetchSchedule";
 import { Icon } from "@iconify/react";
@@ -23,18 +23,29 @@ const JadwalPage: React.FC = () => {
     modalIsOpen: false,
     isEditing: false,
   });
+
+  const [branchId, setBranchId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Pastikan localStorage hanya diakses di sisi klien
+    if (typeof window !== 'undefined') {
+      setBranchId(localStorage.getItem('branch_id') || '');
+      setUserId(localStorage.getItem('user_id') || '');
+    }
+  }, []);
   const { modalIsOpen, isEditing } = modal;
   const [currentScheduleId, setCurrentScheduleId] = useState<number | null>(null);
   const [newSchedule, setNewSchedule] = useState<Schedule>({
     id: 0,
     code: "",
     description: "",
-    branch_id: localStorage.getItem("branch_id") || "",
+    branch_id: branchId || "",
     sensor_id: "",
     weight: "",
     onStart: "",
     onEnd: "",
-    user_id: localStorage.getItem("user_id") || "",
+    user_id: userId || "",
   });
 
   const { alatData, refetch } = useAlat(newSchedule.branch_id);
@@ -115,10 +126,10 @@ const JadwalPage: React.FC = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 
   const currentItems = scheduleData
-  ? scheduleData
+    ? scheduleData
       .sort((a, b) => new Date(b.onStart).getTime() - new Date(a.onStart).getTime()) // Sort by 'onStart' in descending order
       .slice(indexOfFirstItem, indexOfLastItem)
-  : [];
+    : [];
   const totalPages = Math.ceil(scheduleData?.length / itemsPerPage);
 
   const pageRange = 2;
@@ -167,9 +178,9 @@ const JadwalPage: React.FC = () => {
                   <td className="py-4 px-2">
                     {item.sensor_id
                       ? alatData
-                          ?.filter((alat) => alat?.id === Number(item.sensor_id))
-                          .map((alat) => alat?.code)
-                          .join(", ")
+                        ?.filter((alat) => alat?.id === Number(item.sensor_id))
+                        .map((alat) => alat?.code)
+                        .join(", ")
                       : null}
                   </td>
                   <td className="py-4 px-2">{formatDate(item.onStart)}</td>
@@ -203,18 +214,16 @@ const JadwalPage: React.FC = () => {
           <button
             onClick={prevPage}
             disabled={currentPage === 1}
-            className={`px-4 py-2 rounded-md ${
-              currentPage === 1 ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"
-            }`}
+            className={`px-4 py-2 rounded-md ${currentPage === 1 ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"
+              }`}
           >
             <Icon icon="akar-icons:chevron-left" className="w-5 h-5" />
           </button>
           {pageToShow.map((page) => (
             <button
               key={page}
-              className={`px-4 py-2 rounded-md ${
-                currentPage === page ? "bg-primary-color text-white" : "bg-secondary-color text-white"
-              }`}
+              className={`px-4 py-2 rounded-md ${currentPage === page ? "bg-primary-color text-white" : "bg-secondary-color text-white"
+                }`}
               onClick={() => setCurrentPage(page)}
             >
               {page}
@@ -223,11 +232,10 @@ const JadwalPage: React.FC = () => {
           <button
             onClick={nextPage}
             disabled={currentPage === totalPages}
-            className={`px-4 py-2 rounded-md ${
-              currentPage === totalPages
+            className={`px-4 py-2 rounded-md ${currentPage === totalPages
                 ? "bg-secondary-color text-gray-500"
                 : "bg-secondary-color text-white"
-            }`}
+              }`}
           >
             <Icon icon="akar-icons:chevron-right" className="w-5 h-5" />
           </button>
