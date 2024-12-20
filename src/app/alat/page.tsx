@@ -1,28 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Icon } from '@iconify/react';
 import Modal from 'react-modal';
 import axios from 'axios';
 import { useAlat } from '@/hooks/useFetchAlat';
 import { useBranch } from '@/hooks/useFetchBranch';
 
-// Membuat instance Axios dengan baseURL
-const axiosInstance = axios.create({
-  baseURL: 'http://103.127.138.198:8080/api/', // Sesuaikan dengan URL backend Anda
-});
-
-// Menambahkan token ke setiap request secara otomatis
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 const AlatPage: React.FC = () => {
   const [modal, setModal] = useState({
@@ -51,8 +35,16 @@ const AlatPage: React.FC = () => {
     user_id?: number;
   }
 
-  const branchId = localStorage.getItem('branch_id') || '';
-  const userId = localStorage.getItem('user_id');
+  const [branchId, setBranchId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Pastikan localStorage hanya diakses di sisi klien
+    if (typeof window !== 'undefined') {
+      setBranchId(localStorage.getItem('branch_id') || '');
+      setUserId(localStorage.getItem('user_id') || '');
+    }
+  }, []);
   const { alatData, submitAlat, updateAlat, deleteAlat } = useAlat(branchId as string);
   const { branchData } = useBranch(userId as string);
 

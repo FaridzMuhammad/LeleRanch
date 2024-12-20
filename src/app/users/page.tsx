@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import Modal from 'react-modal';
 import { useUser } from '@/hooks/useFetchUsers';
@@ -28,8 +28,16 @@ const UsersPage: React.FC = () => {
   });
   const { modalIsOpen, isEditing, deleteModalIsOpen } = modal;
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const branchId = localStorage.getItem('branch_id') || '';
-  const userId = localStorage.getItem('user_id') || '';
+  const [branchId, setBranchId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Pastikan localStorage hanya diakses di sisi klien
+    if (typeof window !== 'undefined') {
+      setBranchId(localStorage.getItem('branch_id') || '');
+      setUserId(localStorage.getItem('user_id') || '');
+    }
+  }, []);
 
   const [newUser, setNewUser] = useState<User>({
     id: 0,
@@ -89,7 +97,7 @@ const UsersPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
+
     if (isEditing && currentUserId) {
       await updateUser(currentUserId, newUser);
     } else {

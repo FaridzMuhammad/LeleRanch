@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useUser } from '@/hooks/useFetchUsers';
 
@@ -10,8 +10,16 @@ const ProfilePage: React.FC = () => {
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
 
-  const branchId = localStorage.getItem('branch_id') || '';
-  const userId = localStorage.getItem('user_id');
+  const [branchId, setBranchId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Pastikan localStorage hanya diakses di sisi klien
+    if (typeof window !== 'undefined') {
+      setBranchId(localStorage.getItem('branch_id') || '');
+      setUserId(localStorage.getItem('user_id') || '');
+    }
+  }, []);
 
   const { userData, updateUser, refetch } = useUser(branchId);
 

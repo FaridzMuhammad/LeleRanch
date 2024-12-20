@@ -25,7 +25,6 @@ const JadwalPage: React.FC = () => {
   });
   const { modalIsOpen, isEditing } = modal;
   const [currentScheduleId, setCurrentScheduleId] = useState<number | null>(null);
-
   const [newSchedule, setNewSchedule] = useState<Schedule>({
     id: 0,
     code: "",

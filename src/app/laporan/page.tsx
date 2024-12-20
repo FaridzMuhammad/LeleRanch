@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useAlat } from "@/hooks/useFetchAlat";
@@ -51,10 +51,18 @@ const LaporanPage: React.FC = () => {
     branch_id: "",
   });
 
-  const branchId = localStorage.getItem("branch_id") || "";
-  const userId = localStorage.getItem("user_id");
+  const [branchId, setBranchId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const { alatData } = useAlat(branchId);
+  useEffect(() => {
+    // Pastikan localStorage hanya diakses di sisi klien
+    if (typeof window !== 'undefined') {
+      setBranchId(localStorage.getItem('branch_id') || '');
+      setUserId(localStorage.getItem('user_id') || '');
+    }
+  }, []);
+
+  const { alatData } = useAlat(branchId as string);
   const { laporanData, submitLaporan } = useLaporan(branchId);
   const { userData } = useUser(branchId);
   const { branchData } = useBranch(userId as string);
@@ -142,36 +150,36 @@ const LaporanPage: React.FC = () => {
   };
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 7;
-  
+
   const sortedLaporanData = React.useMemo(() => {
     if (!laporanData) return [];
     return [...laporanData].sort((a, b) => b.id - a.id); // Sort descending by 'id'
   }, [laporanData]);
-  
+
   const totalPages = Math.ceil(sortedLaporanData.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = sortedLaporanData.slice(indexOfFirstItem, indexOfLastItem);
-  
+
   const handlePageClick = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
   };
-  
+
 
   const prevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
-  
+
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
   };
-  
+
   const pageRange = 2;
   const startPage = Math.max(1, currentPage - pageRange);
   const endPage = Math.min(totalPages, currentPage + pageRange);
@@ -206,9 +214,8 @@ const LaporanPage: React.FC = () => {
             {currentItems.map((item, index) => (
               <tr
                 key={index}
-                className={`border-t border-tertiary-color ${
-                  index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"
-                }`}
+                className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"
+                  }`}
               >
                 <td className="py-4 px-2">{new Date(item.date).toLocaleDateString()}</td>
                 <td className="py-4 px-2">

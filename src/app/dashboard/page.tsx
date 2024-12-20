@@ -19,7 +19,14 @@ export interface Schedule {
 }
 
 export default function Home() {
-  const branchId = localStorage.getItem('branch_id') || ''; // Gunakan jika branch_id diperlukan
+  const [branchId, setBranchId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Pastikan localStorage hanya diakses di sisi klien
+    if (typeof window !== 'undefined') {
+      setBranchId(localStorage.getItem('branch_id') || '');
+    }
+  }, []);
   const { scheduleData } = useSchedule();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,7 +34,7 @@ export default function Home() {
   const [totalFeedingGiven, setTotalFeedingGiven] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(7);
-  const { alatData } = useAlat(branchId);
+  const { alatData } = useAlat(branchId as string);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -141,7 +148,7 @@ export default function Home() {
                         <td className="py-4 px-2">{item?.weight}</td>
                         <td className="py-4 px-2">{item?.sensor_id
                           ? alatData
-                            ?.filter(alat => alat?.id === Number(item?.sensor_id)) 
+                            ?.filter(alat => alat?.id === Number(item?.sensor_id))
                             .map(alat => alat?.code)
                             .join(", ")
                           : null}
