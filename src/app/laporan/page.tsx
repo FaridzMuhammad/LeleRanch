@@ -57,7 +57,7 @@ const LaporanPage: React.FC = () => {
   const { alatData } = useAlat(branchId);
   const { laporanData, submitLaporan } = useLaporan(branchId);
   const { userData } = useUser(branchId);
-  const { branchData } = useBranch();
+  const { branchData } = useBranch(userId as string);
 
   const openModal = (laporan: Laporan | null = null) => {
     setModal({ modalIsOpen: true, deleteModalIsOpen: false, isEditing: !!laporan });

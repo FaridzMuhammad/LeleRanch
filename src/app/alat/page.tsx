@@ -54,7 +54,7 @@ const AlatPage: React.FC = () => {
   const branchId = localStorage.getItem('branch_id') || '';
   const userId = localStorage.getItem('user_id');
   const { alatData, submitAlat, updateAlat, deleteAlat } = useAlat(branchId as string);
-  const { branchData } = useBranch();
+  const { branchData } = useBranch(userId as string);
 
   const openModal = (sensor: Alat | null = null) => {
     setModal({ ...modal, isEditing: !!sensor, modalIsOpen: true });

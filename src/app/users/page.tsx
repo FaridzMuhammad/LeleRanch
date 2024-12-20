@@ -41,7 +41,7 @@ const UsersPage: React.FC = () => {
   const userId = localStorage.getItem('user_id') || '';
 
   const { userData, submitUser, updateUser, deleteUser, refetch } = useUser(branchId);
-  const { branchData } = useBranch();
+  const { branchData } = useBranch(userId as string);
 
   const openModal = (user?: User) => {
     if (user) {
