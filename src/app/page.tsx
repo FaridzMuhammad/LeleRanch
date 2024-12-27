@@ -1,71 +1,30 @@
 "use client";
 
-import React, { useState } from 'react';
-import { jwtDecode } from 'jwt-decode'; 
-
-// Define the type for the decoded token
-interface DecodedToken {
-  exp: number;
-  sub: string;
-}
+import React, { useState } from "react";
+import { apiPost } from "../api/apiService";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      const response = await fetch('https://103.127.138.198/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response: { token: string } = await apiPost("https://103.127.138.198/api/login", { email, password });
 
-      const data = await response.json();
-      console.log("Login Response: ", data); // Add logging to check if the response contains user data
 
-      if (response.ok) {
-        // Save token in localStorage
-        localStorage.setItem('token', data.token);
+      // Simpan token di localStorage
+      localStorage.setItem("token", response.token);
+      console.log("API Response:", response); 
 
-        // Make sure branch_id and user_id are properly saved
-        if (data.user && data.user.branch_id && data.user.id) {
-          localStorage.setItem("branch_id", data.user.branch_id.toString());
-          localStorage.setItem("user_id", data.user.id.toString()); // Corrected to store user_id
-        } else {
-          setErrorMessage("Branch ID or User ID missing from response");
-          return;
-        }
-
-        // Decode token to get expiration time
-        const decodedToken: DecodedToken = jwtDecode(data.token); // Decode the token to extract expiration
-        const expirationTime = decodedToken.exp * 1000; // Convert to milliseconds
-        localStorage.setItem('tokenExpiration', expirationTime.toString());
-
-        // Set a timer to automatically log out when the token expires
-        setTimeout(() => {
-          alert('Token has expired. Please log in again.');
-          localStorage.removeItem('token');
-          localStorage.removeItem('tokenExpiration');
-          window.location.href = '/login';
-        }, expirationTime - Date.now()); // Auto logout when token expires
-
-        // Redirect to dashboard or another page
-        alert('Login successful!');
-        window.location.href = '/dashboard'; // Change to your correct route
-      } else {
-        // Display error message if login fails
-        setErrorMessage(data.message || 'Login failed. Please check your credentials.');
-      }
+      // Redirect ke dashboard
+      alert("Login successful!");
+      window.location.href = "/dashboard";
     } catch (error) {
-      // Handle server errors
-      setErrorMessage('Server error occurred');
-      console.error('Error:', error);
+      setErrorMessage("Login failed. Please check your credentials.");
+      console.error("Error:", error);
     }
   };
 

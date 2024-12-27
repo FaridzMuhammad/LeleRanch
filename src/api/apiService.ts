@@ -36,7 +36,6 @@ export const apiPost = async <T, U>(url: string, data: U): Promise<T> => {
         const response = await api.post<T>(url, data);
         return response.data;
     } catch (error: unknown) {
-        // Jika ingin akses properti tertentu, pastikan error dikonversi ke tipe yang sesuai
         if (error instanceof Error) {
             throw new Error(error.message);
         }
@@ -44,7 +43,7 @@ export const apiPost = async <T, U>(url: string, data: U): Promise<T> => {
     }
 };
 
-export const apiGet = async<T>(url: string): Promise<T> => {
+export const apiGet = async <T>(url: string): Promise<T> => {
     try {
         const response = await api.get<T>(url);
         return response.data;
@@ -56,27 +55,27 @@ export const apiGet = async<T>(url: string): Promise<T> => {
     }
 };
 
-        export const apiPut = async <T, U>(url: string, data: U): Promise<T> => {
+export const apiPut = async <T, U>(url: string, data: U): Promise<T> => {
     try {
         const response = await api.put<T>(url, data);
-                return response.data;
+        return response.data;
     } catch (error: unknown) {
         if (error instanceof Error) {
             throw new Error(error.message);
         }
-                throw error;
+        throw error;
     }
 };
 
-                export const apiDelete = async <T>(url: string): Promise<T> => {
+export const apiDelete = async <T>(url: string): Promise<T> => {
     try {
         const response = await api.delete<T>(url);
-                        return response.data;
+        return response.data;
     } catch (error: unknown) {
         if (error instanceof Error) {
             throw new Error(error.message);
         }
-                        throw error;
+        throw error;
     }
 };
 
