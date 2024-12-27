@@ -45,6 +45,7 @@
     "eslint-plugin-unused-imports": "^4.0.0",
     "postcss": "^8.4.21",
     "tailwindcss": "^3.3.2",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "proxy" : "https://103.127.138.198:8080",
   }
 }
