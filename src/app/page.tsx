@@ -19,7 +19,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://103.127.138.198:8080/api/login', {
+      const response = await fetch('https://103.127.138.198/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
