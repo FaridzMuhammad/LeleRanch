@@ -2,28 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
-import axios from "axios";
 import { useAlat } from "@/hooks/useFetchAlat";
 import { useLaporan } from "@/hooks/useFetchLaporan";
 import { useUser } from "@/hooks/useFetchUsers";
 import { useBranch } from "@/hooks/useFetchBranch";
 import { Icon } from "@iconify/react";
+import Cookies from "js-cookie";
 
-// Membuat instance Axios dengan baseURL
-const axiosInstance = axios.create({
-  baseURL: "http://103.127.138.198:8080/api/",
-});
-
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 interface Laporan {
   id: number;
@@ -41,7 +26,7 @@ const LaporanPage: React.FC = () => {
     isEditing: false,
   });
 
-  const { modalIsOpen, isEditing, deleteModalIsOpen } = modal;
+  const { modalIsOpen, deleteModalIsOpen } = modal;
   const [currentReportId, setCurrentReportId] = useState<number | null>(null);
   const [newReport, setNewReport] = useState({
     tanggal: "",
@@ -55,10 +40,15 @@ const LaporanPage: React.FC = () => {
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Pastikan localStorage hanya diakses di sisi klien
     if (typeof window !== 'undefined') {
-      setBranchId(localStorage.getItem('branch_id') || '');
-      setUserId(localStorage.getItem('user_id') || '');
+      const storedBranchId = Cookies.get('branch_id');
+      const storedUserId = Cookies.get('user_id');
+  
+      console.log('Stored Branch ID:', storedBranchId);
+      console.log('Stored User ID:', storedUserId);
+  
+      setBranchId(storedBranchId || '');
+      setUserId(storedUserId || '');
     }
   }, []);
 
@@ -109,7 +99,7 @@ const LaporanPage: React.FC = () => {
   const handleDelete = async () => {
     if (currentReportId !== null) {
       try {
-        await axiosInstance.delete(`history/${currentReportId}`);
+        
       } catch (error) {
         console.error("Error deleting report:", error);
       }
@@ -138,11 +128,7 @@ const LaporanPage: React.FC = () => {
     };
 
     try {
-      if (isEditing && currentReportId !== null) {
-        await axiosInstance.put(`history/${currentReportId}`, reportPayload);
-      } else {
-        await submitLaporan(reportPayload);
-      }
+      await submitLaporan(reportPayload);
     } catch (error) {
       console.error("Error submitting report:", error);
     }
@@ -268,7 +254,7 @@ const LaporanPage: React.FC = () => {
         className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-4xl mx-auto my-20"
         overlayClassName="fixed inset-0 flex items-center justify-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-4">{isEditing ? "Edit Report" : "Add Report"}</h2>
+        <h2 className="text-2xl font-bold text-white mb-4">{"Add Report"}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-white mb-2">Tanggal</label>
@@ -335,7 +321,7 @@ const LaporanPage: React.FC = () => {
               Cancel
             </button>
             <button type="submit" className="bg-tertiary-color text-white p-2 rounded-lg">
-              {isEditing ? "Update" : "Create"}
+              {"Create"}
             </button>
           </div>
         </form>

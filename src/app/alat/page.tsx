@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import Modal from 'react-modal';
 import { useAlat } from '@/hooks/useFetchAlat';
 import { useBranch } from '@/hooks/useFetchBranch';
+import Cookies from 'js-cookie';
 
 
 const AlatPage: React.FC = () => {
@@ -38,12 +39,20 @@ const AlatPage: React.FC = () => {
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Pastikan localStorage hanya diakses di sisi klien
     if (typeof window !== 'undefined') {
-      setBranchId(localStorage.getItem('branch_id') || '');
-      setUserId(localStorage.getItem('user_id') || '');
+      const storedBranchId = Cookies.get('branch_id');
+      const storedUserId = Cookies.get('user_id');
+  
+      console.log('Stored Branch ID:', storedBranchId);
+      console.log('Stored User ID:', storedUserId);
+  
+      setBranchId(storedBranchId || '');
+      setUserId(storedUserId || '');
     }
   }, []);
+
+  console.log('Branch ID:', branchId);
+  console.log('User ID:', userId);  
   const { alatData, submitAlat, updateAlat, deleteAlat } = useAlat(branchId as string);
   const { branchData } = useBranch(userId as string);
 

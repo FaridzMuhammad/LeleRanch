@@ -5,6 +5,7 @@ import Modal from "react-modal";
 import { useSchedule } from "@/hooks/useFetchSchedule";
 import { Icon } from "@iconify/react";
 import { useAlat } from "@/hooks/useFetchAlat";
+import Cookies from "js-cookie";
 
 interface Schedule {
   id: number;
@@ -28,12 +29,32 @@ const JadwalPage: React.FC = () => {
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Pastikan localStorage hanya diakses di sisi klien
     if (typeof window !== 'undefined') {
-      setBranchId(localStorage.getItem('branch_id') || '');
-      setUserId(localStorage.getItem('user_id') || '');
+      const storedBranchId = Cookies.get('branch_id');
+      const storedUserId = Cookies.get('user_id');
+  
+      console.log('Stored Branch ID:', storedBranchId);
+      console.log('Stored User ID:', storedUserId);
+  
+      setBranchId(storedBranchId || '');
+      setUserId(storedUserId || '');
     }
   }, []);
+
+  console.log('Branch ID:', branchId);
+  console.log('User ID:', userId);
+
+  const getLastScheduleEndTime = () => {
+    if (!scheduleData || scheduleData.length === 0) {
+      return null; // Jika tidak ada data
+    }
+    // Ambil jadwal dengan waktu selesai terakhir
+    const lastSchedule = scheduleData
+      .sort((a, b) => new Date(b.onEnd).getTime() - new Date(a.onEnd).getTime())[0];
+    return new Date(lastSchedule.onEnd);
+  };
+  
+
   const { modalIsOpen, isEditing } = modal;
   const [currentScheduleId, setCurrentScheduleId] = useState<number | null>(null);
   const [newSchedule, setNewSchedule] = useState<Schedule>({
@@ -54,25 +75,37 @@ const JadwalPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 7;
 
+
+
   const openModal = (schedule: Schedule | null = null) => {
     setModal({ isEditing: !!schedule, modalIsOpen: true });
+  
     if (schedule) {
       setCurrentScheduleId(schedule.id);
       setNewSchedule(schedule);
     } else {
+      // Ambil waktu terakhir
+      const lastEndTime = getLastScheduleEndTime();
+      const defaultStartTime = lastEndTime
+        ? new Date(lastEndTime.getTime() + 6 * 60 * 60 * 1000) // Tambahkan 6 jam
+        : new Date(); // Fallback jika tidak ada data
+      const defaultEndTime = new Date(defaultStartTime.getTime() + 6 * 60 * 60 * 1000); // Tambahkan 6 jam untuk onEnd
+  
       setNewSchedule({
         id: 0,
         code: "",
         description: "",
-        branch_id: localStorage.getItem("branch_id") || "",
+        branch_id: branchId || "",
         sensor_id: "",
         weight: "",
-        onStart: "",
-        onEnd: "",
-        user_id: localStorage.getItem("user_id") || "",
+        onStart: defaultStartTime.toISOString().slice(0, 16), // Format untuk input datetime-local
+        onEnd: defaultEndTime.toISOString().slice(0, 16), // Format untuk input datetime-local
+        user_id: userId || "",
       });
     }
   };
+  
+
 
   const closeModal = () => {
     setModal({ ...modal, modalIsOpen: false });

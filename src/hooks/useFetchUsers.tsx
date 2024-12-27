@@ -26,7 +26,7 @@ interface User {
 interface UseUserReturn {
     userData: User[];
     loading: boolean;
-    error: unknown; // Use unknown for error type
+    error: unknown;
     submitUser: (newUser: Omit<User, "id">) => Promise<void>;
     updateUser: (id: number, updatedUser: Partial<User>) => Promise<void>;
     deleteUser: (id: number) => Promise<void>;
@@ -38,29 +38,37 @@ interface UseUserReturn {
 export const useUser = (branchId: string | null): UseUserReturn => {
     const [userData, setUserData] = useState<User[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<unknown>(null); // Use unknown for error
+    const [error, setError] = useState<unknown>(null); 
 
     const fetchData = useCallback(async () => {
         if (!branchId) {
-            setError("Branch ID tidak tersedia.");
-            setLoading(false);
-            return;
+          setError("Branch ID tidak tersedia.");
+          setLoading(false);
+          return;
         }
+      
         setLoading(true);
         try {
-            const response = await apiGet(`users`);
-            setUserData(response as User[]);
-            setError(null);
+          const response = await apiGet<User[]>(`users`); // Sesuaikan jika API langsung mengembalikan array pengguna
+      
+          if (Array.isArray(response)) {
+            setUserData(response);
+          } else {
+            throw new Error("Invalid response format");
+          }
+      
+          console.log("User data fetched:", response);
+          setError(null);
         } catch (error) {
-            console.error("Error fetching user data:", error);
-            setError(error);
+          console.error("Error fetching user data:", error);
+          setError(error);
         } finally {
-            setLoading(false);
+          setLoading(false);
         }
-    }, [branchId]);
+      }, [branchId]);
+      
 
     const submitUser = useCallback(async (newUser: Omit<User, "id">) => {
-        // Validasi branchId
         if (!newUser.branch_id) {
             console.error("Branch ID tidak tersedia");
             setError("Branch ID tidak tersedia");
@@ -74,9 +82,9 @@ export const useUser = (branchId: string | null): UseUserReturn => {
         try {
             console.log("Submitting new user:", newUser);
 
-            // Pastikan branch_Id ada di payload
-            await apiPost(`users`, newUser);  // Pastikan apiPost berfungsi dengan benar
-            await fetchData();  // Ambil data terbaru setelah user ditambahkan
+            
+            await apiPost(`users`, newUser);
+            await fetchData();
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.error("Axios error:", error.response?.data || error.message);
@@ -135,7 +143,7 @@ export const useUser = (branchId: string | null): UseUserReturn => {
         }
     }, [fetchData]);
 
-    
+
 
 
     const refetch = useCallback(async () => {
@@ -144,7 +152,7 @@ export const useUser = (branchId: string | null): UseUserReturn => {
 
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+    }, [fetchData, branchId]);
 
     return { userData, loading, error, submitUser, updateUser, deleteUser, refetch, resetPassword };
 }

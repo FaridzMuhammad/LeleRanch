@@ -11,6 +11,7 @@ import PageWrapper from '@/components/page-wrapper';
 import SideNav from '@/components/side-nav';
 import { useSchedule } from '@/hooks/useFetchSchedule';
 import { useAlat } from '@/hooks/useFetchAlat';
+import Cookies from 'js-cookie';
 
 export interface Schedule {
   onStart: string;
@@ -20,11 +21,18 @@ export interface Schedule {
 
 export default function Home() {
   const [branchId, setBranchId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Pastikan localStorage hanya diakses di sisi klien
     if (typeof window !== 'undefined') {
-      setBranchId(localStorage.getItem('branch_id') || '');
+      const storedBranchId = Cookies.get('branch_id');
+      const storedUserId = Cookies.get('user_id');
+  
+      console.log('Stored Branch ID:', storedBranchId);
+      console.log('Stored User ID:', storedUserId);
+  
+      setBranchId(storedBranchId || '');
+      setUserId(storedUserId || '');
     }
   }, []);
   const { scheduleData } = useSchedule();

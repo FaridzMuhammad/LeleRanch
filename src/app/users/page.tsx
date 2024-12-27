@@ -3,12 +3,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import Modal from 'react-modal';
+import Cookies from 'js-cookie';
 import { useUser } from '@/hooks/useFetchUsers';
 import { useBranch } from '@/hooks/useFetchBranch';
 
 interface User {
   id: number;
-  user_id?: number; // Make it optional since we add it during submission
+  user_id?: number;
   name: string;
   email: string;
   password: string;
@@ -18,8 +19,6 @@ interface User {
   condition: string;
 }
 
-type CreateUserInput = Omit<User, 'id'>;
-
 const UsersPage: React.FC = () => {
   const [modal, setModal] = useState({
     modalIsOpen: false,
@@ -28,16 +27,23 @@ const UsersPage: React.FC = () => {
   });
   const { modalIsOpen, isEditing, deleteModalIsOpen } = modal;
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
   const [branchId, setBranchId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Pastikan localStorage hanya diakses di sisi klien
     if (typeof window !== 'undefined') {
-      setBranchId(localStorage.getItem('branch_id') || '');
-      setUserId(localStorage.getItem('user_id') || '');
+      const storedBranchId = Cookies.get('branch_id');
+      const storedUserId = Cookies.get('user_id');
+  
+      console.log('Stored Branch ID:', storedBranchId);
+      console.log('Stored User ID:', storedUserId);
+  
+      setBranchId(storedBranchId || '');
+      setUserId(storedUserId || '');
     }
   }, []);
+  
 
   const [newUser, setNewUser] = useState<User>({
     id: 0,
@@ -48,9 +54,8 @@ const UsersPage: React.FC = () => {
     branch_id: Number(branchId),
     status: '',
     condition: '',
+    user_id: Number(userId),
   });
-
-
 
   const { userData, submitUser, updateUser, deleteUser, refetch } = useUser(branchId);
   const { branchData } = useBranch(userId as string);
@@ -70,6 +75,7 @@ const UsersPage: React.FC = () => {
         branch_id: Number(branchId),
         status: '',
         condition: '',
+        user_id: Number(userId),
       });
       setModal({ modalIsOpen: true, isEditing: false, deleteModalIsOpen: false });
     }
@@ -104,7 +110,7 @@ const UsersPage: React.FC = () => {
       const { id, ...createUserData } = newUser;
       await submitUser({
         ...createUserData,
-        user_id: Number(localStorage.getItem('user_id')) || 0
+        user_id: Number(Cookies.get('user_id')) || 0, // Ambil dari cookies
       });
     }
     closeModal();

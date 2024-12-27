@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useUser } from '@/hooks/useFetchUsers';
+import Cookies from 'js-cookie';
 
 const ProfilePage: React.FC = () => {
   const [error, setError] = useState('');
@@ -14,14 +15,22 @@ const ProfilePage: React.FC = () => {
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Pastikan localStorage hanya diakses di sisi klien
     if (typeof window !== 'undefined') {
-      setBranchId(localStorage.getItem('branch_id') || '');
-      setUserId(localStorage.getItem('user_id') || '');
+      const storedBranchId = Cookies.get('branch_id');
+      const storedUserId = Cookies.get('user_id');
+  
+      console.log('Stored Branch ID:', storedBranchId);
+      console.log('Stored User ID:', storedUserId);
+  
+      setBranchId(storedBranchId || '');
+      setUserId(storedUserId || '');
     }
   }, []);
 
   const { userData, updateUser, refetch } = useUser(branchId);
+
+  console.log('User Data:', userData);
+
 
   const openEditProfileModal = () => {
     const user = userData.find((user) => user.id === Number(userId));

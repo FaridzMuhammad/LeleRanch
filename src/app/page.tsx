@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { apiPost } from "../api/apiService";
+import Cookies from 'js-cookie';
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -12,21 +13,34 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response: { token: string } = await apiPost("https://103.127.138.198/api/login", { email, password });
+        // Panggil API login dan pastikan tipe respons sesuai dengan struktur sebenarnya
+        const response: {
+            message: string;
+            token: string;
+            user: { branch_id: number; id: number; email: string; name: string; role: string };
+        } = await apiPost("https://103.127.138.198/api/login", { email, password });
 
+        // Simpan token di localStorage
+        const { token, user } = response; // Ambil token dan user dari respons
+        const { branch_id, id: user_id } = user; // Ambil branch_id dan user_id dari user
 
-      // Simpan token di localStorage
-      localStorage.setItem("token", response.token);
-      console.log("API Response:", response); 
+        localStorage.setItem("token", token);
+        console.log("API Response:", response);
 
-      // Redirect ke dashboard
-      alert("Login successful!");
-      window.location.href = "/dashboard";
+        // Simpan branch_id dan user_id di cookies
+        Cookies.set("branch_id", branch_id.toString(), { path: "/" });
+        Cookies.set("user_id", user_id.toString(), { path: "/" });
+        console.log("Login successful. Cookies set:", { branch_id, user_id });
+
+        // Redirect ke dashboard
+        alert("Login successful!");
+        window.location.href = "/dashboard";
     } catch (error) {
-      setErrorMessage("Login failed. Please check your credentials.");
-      console.error("Error:", error);
+        setErrorMessage("Login failed. Please check your credentials.");
+        console.error("Error:", error);
     }
-  };
+};
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-primary-color">
