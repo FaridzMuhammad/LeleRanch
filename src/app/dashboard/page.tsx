@@ -78,7 +78,7 @@ export default function Home() {
   const startPage = Math.max(currentPage - pageRange, 1);
   const endPage = Math.min(currentPage + pageRange, totalPages);
 
-  const pagesToShow = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+  const pageToShow = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
   const handlePageClick = (page: number) => setCurrentPage(page);
   const nextPage = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
@@ -157,6 +157,36 @@ export default function Home() {
                     ))}
                   </tbody>
                 </table>
+                <div className="flex justify-end py-4 space-x-2 px-4">
+                  <button
+                    onClick={prevPage}
+                    disabled={currentPage === 1}
+                    className={`px-4 py-2 rounded-md ${currentPage === 1 ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"
+                      }`}
+                  >
+                    <Icon icon="akar-icons:chevron-left" className="w-5 h-5" />
+                  </button>
+                  {pageToShow.map((page) => (
+                    <button
+                      key={page}
+                      className={`px-4 py-2 rounded-md ${currentPage === page ? "bg-primary-color text-white" : "bg-secondary-color text-white"
+                        }`}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={nextPage}
+                    disabled={currentPage === totalPages}
+                    className={`px-4 py-2 rounded-md ${currentPage === totalPages
+                      ? "bg-secondary-color text-gray-500"
+                      : "bg-secondary-color text-white"
+                      }`}
+                  >
+                    <Icon icon="akar-icons:chevron-right" className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
           </PageWrapper>
