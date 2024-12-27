@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useState } from 'react';
-import { jwtDecode } from 'jwt-decode'; // Ensure jwt-decode is properly installed
+import { jwtDecode } from 'jwt-decode'; 
 
 // Define the type for the decoded token
 interface DecodedToken {
-  exp: number; // Expiration time in seconds
-  sub: string; // Subject (usually the user ID or similar)
-  // Add other fields from your JWT if needed
+  exp: number;
+  sub: string;
 }
 
 export default function Login() {
