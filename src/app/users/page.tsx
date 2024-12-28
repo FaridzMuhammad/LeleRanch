@@ -35,15 +35,15 @@ const UsersPage: React.FC = () => {
     if (typeof window !== 'undefined') {
       const storedBranchId = Cookies.get('branch_id');
       const storedUserId = Cookies.get('user_id');
-  
+
       console.log('Stored Branch ID:', storedBranchId);
       console.log('Stored User ID:', storedUserId);
-  
+
       setBranchId(storedBranchId || '');
       setUserId(storedUserId || '');
     }
   }, []);
-  
+
 
   const [newUser, setNewUser] = useState<User>({
     id: 0,
@@ -115,6 +115,10 @@ const UsersPage: React.FC = () => {
     }
     closeModal();
     refetch();
+  };
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setNewUser({ ...newUser, [e.target.name]: e.target.value });
   };
 
   const userItems = useMemo(() => {
@@ -267,14 +271,17 @@ const UsersPage: React.FC = () => {
           </div>
           <div className="mb-4">
             <label className="block text-white mb-2">Role</label>
-            <input
-              type="text"
+            <select
               name="role"
               value={newUser.role}
-              onChange={handleChange}
+              onChange={handleSelectChange}
               className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
-            />
+            >
+              <option value="">Pilih Role</option>
+              <option value="admin">admin</option>
+              <option value="superadmin">superadmin</option>
+            </select>
           </div>
           {!isEditing && (
             <>

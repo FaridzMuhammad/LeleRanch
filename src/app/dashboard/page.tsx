@@ -27,10 +27,10 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       const storedBranchId = Cookies.get('branch_id');
       const storedUserId = Cookies.get('user_id');
-  
+
       console.log('Stored Branch ID:', storedBranchId);
       console.log('Stored User ID:', storedUserId);
-  
+
       setBranchId(storedBranchId || '');
       setUserId(storedUserId || '');
     }
@@ -70,8 +70,11 @@ export default function Home() {
       const nextFeeding = calculateNextFeedingTime(lastFeeding.onStart, 6); // Tambah 6 jam
       setNextFeedingTime(nextFeeding);
 
-      const totalFeeding = reversedData.reduce((acc, item) => acc + Number(item.weight || 0), 0);
-      setTotalFeedingGiven(totalFeeding);
+      const today = new Date().toISOString().slice(0, 10); // Mendapatkan tanggal hari ini (format YYYY-MM-DD)
+      const totalFeedingToday = reversedData
+        .filter(item => item.onStart.slice(0, 10) === today) // Memfilter hanya data hari ini
+        .reduce((acc, item) => acc + Number(item.weight || 0), 0);
+      setTotalFeedingGiven(totalFeedingToday);
     }
   }, [scheduleData]);
 
