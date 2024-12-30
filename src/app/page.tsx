@@ -28,9 +28,11 @@ export default function Login() {
         console.log("API Response:", response);
 
         // Simpan branch_id dan user_id di cookies
-        Cookies.set("branch_id", branch_id.toString(), { path: "/" });
-        Cookies.set("user_id", user_id.toString(), { path: "/" });
-        console.log("Login successful. Cookies set:", { branch_id, user_id });
+        localStorage.setItem("token", token);
+        localStorage.setItem("branch_id", branch_id.toString());
+        localStorage.setItem("user_id", user_id.toString());
+
+        console.log("token:", token);
 
         // Redirect ke dashboard
         alert("Login successful!");

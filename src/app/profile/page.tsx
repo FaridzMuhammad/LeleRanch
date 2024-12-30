@@ -16,12 +16,12 @@ const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedBranchId = Cookies.get('branch_id');
-      const storedUserId = Cookies.get('user_id');
-  
+      const storedBranchId = localStorage.getItem('branch_id');
+      const storedUserId = localStorage.getItem('user_id');
+
       console.log('Stored Branch ID:', storedBranchId);
       console.log('Stored User ID:', storedUserId);
-  
+
       setBranchId(storedBranchId || '');
       setUserId(storedUserId || '');
     }
