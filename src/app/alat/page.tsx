@@ -5,7 +5,6 @@ import { Icon } from '@iconify/react';
 import Modal from 'react-modal';
 import { useAlat } from '@/hooks/useFetchAlat';
 import { useBranch } from '@/hooks/useFetchBranch';
-import Cookies from 'js-cookie';
 
 
 const AlatPage: React.FC = () => {

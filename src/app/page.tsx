@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { apiPost } from "../api/apiService";
-import Cookies from 'js-cookie';
 
 export default function Login() {
   const [email, setEmail] = useState("");

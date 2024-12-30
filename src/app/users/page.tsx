@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import Modal from 'react-modal';
-import Cookies from 'js-cookie';
 import { useUser } from '@/hooks/useFetchUsers';
 import { useBranch } from '@/hooks/useFetchBranch';
 
@@ -110,7 +109,7 @@ const UsersPage: React.FC = () => {
       const { id, ...createUserData } = newUser;
       await submitUser({
         ...createUserData,
-        user_id: Number(Cookies.get('user_id')) || 0, // Ambil dari cookies
+        user_id: Number(userId),
       });
     }
     closeModal();

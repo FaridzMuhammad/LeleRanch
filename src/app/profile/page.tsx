@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useUser } from '@/hooks/useFetchUsers';
-import Cookies from 'js-cookie';
 
 const ProfilePage: React.FC = () => {
   const [error, setError] = useState('');

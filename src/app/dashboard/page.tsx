@@ -11,7 +11,6 @@ import PageWrapper from '@/components/page-wrapper';
 import SideNav from '@/components/side-nav';
 import { useSchedule } from '@/hooks/useFetchSchedule';
 import { useAlat } from '@/hooks/useFetchAlat';
-import Cookies from 'js-cookie';
 
 export interface Schedule {
   onStart: string;

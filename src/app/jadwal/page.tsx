@@ -5,7 +5,6 @@ import Modal from "react-modal";
 import { useSchedule } from "@/hooks/useFetchSchedule";
 import { Icon } from "@iconify/react";
 import { useAlat } from "@/hooks/useFetchAlat";
-import Cookies from "js-cookie";
 
 interface Schedule {
   id: number;
