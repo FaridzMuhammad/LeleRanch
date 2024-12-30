@@ -32,28 +32,29 @@ export default function Login() {
         // Redirect ke dashboard
         alert("Login successful!");
         window.location.href = "/dashboard";
-    } catch (error) {
+    } catch (error: unknown) {
         setErrorMessage("Login failed. Please check your credentials.");
-        
+
         // Log detail error untuk debugging
-        if (error.response) {
+        if (axios.isAxiosError(error) && error.response) {
             // Error dari server (status code tidak 2xx)
             console.error("Server responded with an error:", {
                 status: error.response.status,
                 data: error.response.data,
                 headers: error.response.headers,
             });
-        } else if (error.request) {
+        } else if (axios.isAxiosError(error) && error.request) {
             // Permintaan dikirim tapi tidak ada respons
             console.error("No response received from server:", error.request);
-        } else {
+        } else if (error instanceof Error) {
             // Kesalahan dalam pengaturan permintaan
             console.error("Error setting up the request:", error.message);
+        } else {
+            console.error("An unknown error occurred:", error);
         }
-
-        console.error("Error config:", error.config);
     }
 };
+
 
 
   return (
