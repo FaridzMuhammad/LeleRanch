@@ -32,7 +32,7 @@ export default function Login() {
         // Redirect ke dashboard
         alert("Login successful!");
         window.location.href = "/dashboard";
-    } catch (error: any) {
+    } catch (error) {
         setErrorMessage("Login failed. Please check your credentials.");
         
         // Log detail error untuk debugging
