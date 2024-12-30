@@ -24,21 +24,34 @@ export default function Login() {
         const { branch_id, id: user_id } = user; // Ambil branch_id dan user_id dari user
 
         localStorage.setItem("token", token);
-        console.log("API Response:", response);
-
-        // Simpan branch_id dan user_id di cookies
-        localStorage.setItem("token", token);
         localStorage.setItem("branch_id", branch_id.toString());
         localStorage.setItem("user_id", user_id.toString());
 
-        console.log("token:", token);
+        console.log("Login successful. API Response:", response);
 
         // Redirect ke dashboard
         alert("Login successful!");
         window.location.href = "/dashboard";
-    } catch (error) {
+    } catch (error: any) {
         setErrorMessage("Login failed. Please check your credentials.");
-        console.error("Error:", error);
+        
+        // Log detail error untuk debugging
+        if (error.response) {
+            // Error dari server (status code tidak 2xx)
+            console.error("Server responded with an error:", {
+                status: error.response.status,
+                data: error.response.data,
+                headers: error.response.headers,
+            });
+        } else if (error.request) {
+            // Permintaan dikirim tapi tidak ada respons
+            console.error("No response received from server:", error.request);
+        } else {
+            // Kesalahan dalam pengaturan permintaan
+            console.error("Error setting up the request:", error.message);
+        }
+
+        console.error("Error config:", error.config);
     }
 };
 
