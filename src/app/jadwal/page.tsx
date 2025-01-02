@@ -199,7 +199,6 @@ const JadwalPage: React.FC = () => {
 
   const prevPage = () => setCurrentPage((prev) => Math.max(1, prev - 1));
   const nextPage = () => setCurrentPage((prev) => Math.min(totalPages, prev + 1));
-  console.log("Current Items:", currentItems);
 
   return (
     <div className="p-6 bg-primary-color min-h-screen">

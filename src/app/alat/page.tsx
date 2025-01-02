@@ -15,6 +15,8 @@ const AlatPage: React.FC = () => {
   });
   const { modalIsOpen, isEditing, deleteModalIsOpen } = modal;
   const [currentSensorId, setCurrentSensorId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchResult, setSearchResult] = useState<Alat | null>(null);
   const [newSensor, setNewSensor] = useState({
     code: '',
     branch_id: '',
@@ -22,6 +24,8 @@ const AlatPage: React.FC = () => {
     longitude: '',
     isOn: true,
     user_id: '',
+    isDetected: true,
+    isOpen: true,
   });
 
   interface Alat {
@@ -32,6 +36,8 @@ const AlatPage: React.FC = () => {
     longitude: number;
     isOn: boolean;
     user_id?: number;
+    isDetected: boolean;
+    isOpen: boolean;
   }
 
   const [branchId, setBranchId] = useState<string | null>(null);
@@ -51,9 +57,11 @@ const AlatPage: React.FC = () => {
   }, []);
 
   console.log('Branch ID:', branchId);
-  console.log('User ID:', userId);  
-  const { alatData, submitAlat, updateAlat, deleteAlat } = useAlat(branchId as string);
+  console.log('User ID:', userId);
+  const { alatData, submitAlat, updateAlat, deleteAlat, fetchSensorById } = useAlat(branchId as string);
   const { branchData } = useBranch(userId as string);
+
+  console.log('Alat Data:', alatData);
 
   const openModal = (sensor: Alat | null = null) => {
     setModal({ ...modal, isEditing: !!sensor, modalIsOpen: true });
@@ -69,6 +77,8 @@ const AlatPage: React.FC = () => {
         longitude: sensor.longitude.toString(),
         isOn: sensor.isOn,
         user_id: sanitizedValue.user_id,
+        isDetected: sensor.isDetected,
+        isOpen: sensor.isOpen
       });
     } else {
       if (!userId || !branchId) {
@@ -82,7 +92,28 @@ const AlatPage: React.FC = () => {
         longitude: '',
         isOn: false,
         user_id: userId,
+        isDetected: false,
+        isOpen: false
       });
+    }
+  };
+
+  const handleSearch = async () => {
+    if (searchTerm.trim() === "") {
+      alert("Please enter a valid ID to search.");
+      return;
+    }
+    try {
+      const result = await fetchSensorById(Number(searchTerm));
+      if (result) {
+        setSearchResult(result);
+      } else {
+        alert("Sensor not found.");
+        setSearchResult(null);
+      }
+    } catch (err) {
+      console.error("Error fetching sensor by ID:", err);
+      alert("Error fetching sensor.");
     }
   };
 
@@ -186,50 +217,96 @@ const AlatPage: React.FC = () => {
           <Icon icon="mdi:plus" />
         </button>
       </div>
+      <div className="flex justify-end items-center">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search by ID"
+          className="p-2 rounded-lg border border-white bg-secondary-color text-white mx-2"
+        />
+        <button
+          onClick={handleSearch}
+          className="bg-tertiary-color text-white p-2 px-4 rounded-lg mr-2"
+        >
+          Search
+        </button>
+        <button
+          onClick={() => setSearchResult(null)}
+          className="bg-gray-500 text-white p-2 px-4 rounded-lg"
+        >
+          Clear
+        </button>
+      </div>
 
       <div className="mt-24 bg-secondary-color rounded-lg text-white shadow-md overflow-x-auto">
         <table className="w-full text-center">
           <thead>
             <tr>
-              <th className="py-4 px-2">ID</th>
               <th className="py-4 px-2">Code</th>
               <th className="py-4 px-2">Branch City</th>
-              <th className="py-4 px-2">Latitude</th>
-              <th className="py-4 px-2">Longitude</th>
               <th className="py-4 px-2">Is On</th>
+              <th className="py-4 px-2">isOpen</th>
+              <th className="py-4 px-2">isDetected</th>
               <th className="py-4 px-2">Action</th>
             </tr>
           </thead>
           <tbody>
-
-            {currentItems && currentItems?.length > 0 ? (
-              currentItems?.map((item: Alat, index) => {
-                const branchCity =
-                  branchData?.find((branch: { id: number; city: string }) => branch.id === Number(item.branch_id))
-                    ?.city || 'Unknown Branch';
-                 
-                return (
-                  <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? 'bg-tertiary-color' : 'bg-primary-color'}`}>
-                    <td className="py-4 px-2">{item?.id || 'No ID'}</td>
-                    <td className="py-4 px-2">{item?.code || 'No Code'}</td>
-                    <td className="py-4 px-2">{branchCity}</td>
-                    <td className="py-4 px-2">{item?.latitude || 'No Latitude'}</td>
-                    <td className="py-4 px-2">{item?.longitude || 'No Longitude'}</td>
-                    <td className="py-4 px-2">{item?.isOn ? 'Yes' : 'No'}</td>
-                    <td className="py-4 px-2 flex justify-center space-x-2">
-                      <button className="text-white" onClick={() => openModal(item)}>
-                        <Icon icon="mdi:pencil" className="w-6 h-6" />
-                      </button>
-                      <button className="text-red-700" onClick={() => openDeleteModal(item?.id)}>
-                        <Icon icon="mdi:delete" className="w-6 h-6" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
+            {searchResult ? (
+              <tr className="border-t border-tertiary-color bg-primary-color">
+                <td className="py-4 px-2">{searchResult.code || "No Code"}</td>
+                <td className="py-4 px-2">
+                  {
+                    branchData?.find(
+                      (branch: { id: number; city: string }) =>
+                        branch.id === Number(searchResult.branch_id)
+                    )?.city || "Unknown Branch"
+                  }
+                </td>
+                <td className="py-4 px-2">{searchResult.isOn ? "Yes" : "No"}</td>
+                <td className="py-4 px-2">{searchResult.isOpen ? "Yes" : "No"}</td>
+                <td className="py-4 px-2">{searchResult.isDetected ? "Yes" : "No"}</td>
+                <td className="py-4 px-2 flex justify-center space-x-2">
+                  <button className="text-white" onClick={() => openModal(searchResult)}>
+                    <Icon icon="mdi:pencil" className="w-6 h-6" />
+                  </button>
+                  <button className="text-red-700" onClick={() => openDeleteModal(searchResult.id)}>
+                    <Icon icon="mdi:delete" className="w-6 h-6" />
+                  </button>
+                </td>
+              </tr>
+            ) : currentItems.length > 0 ? (
+              currentItems.map((item, index) => (
+                <tr
+                  key={index}
+                  className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"
+                    }`}
+                >
+                  <td className="py-4 px-2">{item.code || "No Code"}</td>
+                  <td className="py-4 px-2">
+                    {
+                      branchData?.find(
+                        (branch: { id: number; city: string }) =>
+                          branch.id === Number(item.branch_id)
+                      )?.city || "Unknown Branch"
+                    }
+                  </td>
+                  <td className="py-4 px-2">{item.isOn ? "Yes" : "No"}</td>
+                  <td className="py-4 px-2">{item.isOpen ? "Yes" : "No"}</td>
+                  <td className="py-4 px-2">{item.isDetected ? "Yes" : "No"}</td>
+                  <td className="py-4 px-2 flex justify-center space-x-2">
+                    <button className="text-white" onClick={() => openModal(item)}>
+                      <Icon icon="mdi:pencil" className="w-6 h-6" />
+                    </button>
+                    <button className="text-red-700" onClick={() => openDeleteModal(item.id)}>
+                      <Icon icon="mdi:delete" className="w-6 h-6"  />
+                    </button>
+                  </td>
+                </tr>
+              ))
             ) : (
               <tr>
-                <td colSpan={7} className="py-4 px-2 text-center">
+                <td colSpan={6} className="py-4 px-2 text-center">
                   No data available
                 </td>
               </tr>
@@ -329,6 +406,24 @@ const AlatPage: React.FC = () => {
               name="isOn"
               checked={newSensor?.isOn}
               onChange={(e) => setNewSensor({ ...newSensor, isOn: e.target.checked })}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-white mb-2">Is On</label>
+            <input
+              type="checkbox"
+              name="isOpen"
+              checked={newSensor?.isOpen}
+              onChange={(e) => setNewSensor({ ...newSensor, isOpen: e.target.checked })}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-white mb-2">Is On</label>
+            <input
+              type="checkbox"
+              name="isDetected"
+              checked={newSensor?.isDetected}
+              onChange={(e) => setNewSensor({ ...newSensor, isDetected: e.target.checked })}
             />
           </div>
           <div className="flex justify-end space-x-4">

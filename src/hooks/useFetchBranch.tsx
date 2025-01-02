@@ -17,6 +17,7 @@ interface UseBranchReturn {
     updateBranch: (id: number, updatedBranch: Partial<Branch>) => Promise<void>;
     deleteBranch: (id: number) => Promise<void>;
     refetch: () => Promise<void>;
+    fetchBranchById: (id: number) => Promise<Branch | undefined>;
 }
 
 export const useBranch = (userId: string): UseBranchReturn => {
@@ -72,9 +73,19 @@ export const useBranch = (userId: string): UseBranchReturn => {
         }
     }, [fetchData]);
 
+    const fetchBranchById = useCallback(async (id: number) => {
+        try {
+            const response = await apiGet(`/branch/${id}`);
+            return response as Branch;
+        } catch (error) {
+            console.error('Error fetching branch by id:', error);
+            setError(error);
+        }
+    }, [fetchData]);
+
     const refetch = useCallback(async () => {
         await fetchData();
     }, [fetchData]);
 
-    return { branchData, loading, error, submitBranch, updateBranch, deleteBranch, refetch };
+    return { branchData, loading, error, submitBranch, updateBranch, deleteBranch, refetch, fetchBranchById };
 };

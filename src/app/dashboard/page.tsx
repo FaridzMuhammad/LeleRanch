@@ -16,6 +16,7 @@ export interface Schedule {
   onStart: string;
   weight: number;
   sensor_id?: string;
+  TargetWeight: string;
 }
 
 export default function Home() {
@@ -41,6 +42,7 @@ export default function Home() {
   const [totalFeedingGiven, setTotalFeedingGiven] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(7);
+  const [targetWeight, setTargetWeight] = useState<string | null>(null);
   const { alatData } = useAlat(branchId as string);
 
   const openModal = () => setIsModalOpen(true);
@@ -74,6 +76,9 @@ export default function Home() {
         .filter(item => item.onStart.slice(0, 10) === today) // Memfilter hanya data hari ini
         .reduce((acc, item) => acc + Number(item.weight || 0), 0);
       setTotalFeedingGiven(totalFeedingToday);
+      const latestTargetWeight = reversedData[0]?.TargetWeight || 'Tidak tersedia';
+      setTargetWeight(latestTargetWeight);
+
     }
   }, [scheduleData]);
 
@@ -118,17 +123,18 @@ export default function Home() {
                 </div>
                 <div className="flex flex-col bg-primary-color rounded-lg text-center text-white p-4 h-full">
                   <div className="bg-secondary-color py-4 rounded-t-lg flex items-center justify-center h-24 px-2">
+
                     <span className="text-lg break-words whitespace-normal">Target Pakan</span>
                   </div>
                   <div className="flex-1 p-6 bg-tertiary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
                     <Icon icon="mdi:fish-food" className="w-12 h-12" />
-                    <span className="text-2xl font-bold mt-2">20 Kg</span>
-                    <button
+                    <span className="text-2xl font-bold mt-2">{targetWeight}</span>
+                    {/* <button
                       className="pt-4 px-4 text-white rounded-md hover:text-blue-400"
                       onClick={openModal}
                     >
                       Detail
-                    </button>
+                    </button> */}
                   </div>
                 </div>
                 <div className="flex flex-col bg-primary-color rounded-lg text-center text-white p-4 h-full">
@@ -205,14 +211,13 @@ export default function Home() {
         </MarginWidthWrapper>
       </main>
 
-      <Modal
+      {/* <Modal
         isOpen={isModalOpen}
         onRequestClose={closeModal}
         contentLabel="Detail Pakan"
         className="bg-secondary-color p-8 rounded-lg shadow-lg w-3/4 max-w-4xl mx-auto my-20"
         overlayClassName="fixed inset-0 flex items-center justify-center"
       >
-        {/* Modal content */}
         <div className="bg-secondary-color rounded-lg text-white shadow-md mt-20 overflow-x-auto">
           <table className="w-full text-center">
             <thead>
@@ -222,7 +227,6 @@ export default function Home() {
               </tr>
             </thead>
             <tbody>
-              {/* Data here */}
             </tbody>
           </table>
         </div>
@@ -234,7 +238,7 @@ export default function Home() {
             Tutup
           </button>
         </div>
-      </Modal>
+      </Modal> */}
     </div>
   );
 }

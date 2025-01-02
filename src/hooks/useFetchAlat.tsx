@@ -2,12 +2,14 @@ import { apiGet, apiPost, apiPut, apiDelete } from "@/api/apiService";
 import { useCallback, useEffect, useState } from "react";
 
 interface Alat {
+  isOpen: boolean;
   id: number;
   code: string;
   branch_id: string;
   latitude: number;
   longitude: number;
   isOn: boolean;
+  isDetected: boolean;
 }
 
 interface UseAlatReturn {
@@ -18,12 +20,14 @@ interface UseAlatReturn {
   updateAlat: (id: number, updatedAlat: Partial<Alat>) => Promise<void>;
   deleteAlat: (id: number) => Promise<void>;
   refetch: () => Promise<void>;
+  fetchSensorById: (id: number) => Promise<Alat | undefined>;
 }
 
 export const useAlat = (branchId: string | number): UseAlatReturn => {
   const [alatData, setAlatData] = useState<Alat[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<unknown>(null);
+  
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -78,9 +82,19 @@ export const useAlat = (branchId: string | number): UseAlatReturn => {
     [fetchData]
   );
 
+  const fetchSensorById = useCallback(async (id: number) => {
+    try {
+      const response = await apiGet(`/sensor/${id}`);
+      return response as Alat;
+    } catch (error) {
+      console.error("Error fetching alat data:", error);
+      setError(error);
+    }
+  }, [fetchData]);
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  return { alatData, loading, error, submitAlat, updateAlat, deleteAlat, refetch: fetchData };
+  return { alatData, loading, error, submitAlat, updateAlat, deleteAlat, refetch: fetchData, fetchSensorById };
 };
