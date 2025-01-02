@@ -153,7 +153,6 @@ const UsersPage: React.FC = () => {
         <table className="w-full text-center">
           <thead>
             <tr>
-              <th className="py-4 px-2">ID</th>
               <th className="py-4 px-2">Nama</th>
               <th className="py-4 px-2">Email</th>
               <th className="py-4 px-2">Role</th>
@@ -170,7 +169,6 @@ const UsersPage: React.FC = () => {
                 return (
 
                   <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}>
-                    <td className="py-4 px-2">{item?.id || "No ID"}</td>
                     <td className="py-4 px-2">{item?.name || "No name"}</td>
                     <td className="py-4 px-2">{item?.email || "No email"}</td>
                     <td className="py-4 px-2">{item?.role || "No role"}</td>

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 interface Branch {
     id: number;
+    name: string;
     city: string;
     active_time: string;
     user_id: number;
