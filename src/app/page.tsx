@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { apiPost } from "../api/apiService";
 
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +18,7 @@ export default function Login() {
             message: string;
             token: string;
             user: { branch_id: number; id: number; email: string; name: string; role: string };
-        } = await apiPost("https://103.127.138.198/api/login", { email, password });
+        } = await apiPost("http://103.127.138.198:8080/api/login", { email, password });
 
         // Simpan token di localStorage
         const { token, user } = response; // Ambil token dan user dari respons

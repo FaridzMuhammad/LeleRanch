@@ -13,15 +13,18 @@ interface Schedule {
   branch_id: string;
   sensor_id?: string;
   weight: string;
+  TargetWeight?: string;
   onStart: string;
   onEnd: string;
   user_id: string;
+
 }
 
 const JadwalPage: React.FC = () => {
   const [modal, setModal] = useState({
     modalIsOpen: false,
     isEditing: false,
+    deleteModalIsOpen: false,
   });
 
   const [branchId, setBranchId] = useState<string | null>(null);
@@ -52,9 +55,9 @@ const JadwalPage: React.FC = () => {
       .sort((a, b) => new Date(b.onEnd).getTime() - new Date(a.onEnd).getTime())[0];
     return new Date(lastSchedule.onEnd);
   };
-  
 
-  const { modalIsOpen, isEditing } = modal;
+
+  const { modalIsOpen, isEditing, deleteModalIsOpen } = modal;
   const [currentScheduleId, setCurrentScheduleId] = useState<number | null>(null);
   const [newSchedule, setNewSchedule] = useState<Schedule>({
     id: 0,
@@ -63,6 +66,7 @@ const JadwalPage: React.FC = () => {
     branch_id: branchId || "",
     sensor_id: "",
     weight: "",
+    TargetWeight: "",
     onStart: "",
     onEnd: "",
     user_id: userId || "",
@@ -70,6 +74,7 @@ const JadwalPage: React.FC = () => {
 
   const { alatData, refetch } = useAlat(newSchedule.branch_id);
   const { scheduleData, deleteSchedule, submitSchedule, updateSchedule } = useSchedule();
+  console.log('Schedule Data:', scheduleData);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 7;
@@ -77,8 +82,8 @@ const JadwalPage: React.FC = () => {
 
 
   const openModal = (schedule: Schedule | null = null) => {
-    setModal({ isEditing: !!schedule, modalIsOpen: true });
-  
+    setModal({ isEditing: !!schedule, modalIsOpen: true, deleteModalIsOpen: false });
+
     if (schedule) {
       setCurrentScheduleId(schedule.id);
       setNewSchedule(schedule);
@@ -89,7 +94,7 @@ const JadwalPage: React.FC = () => {
         ? new Date(lastEndTime.getTime() + 6 * 60 * 60 * 1000) // Tambahkan 6 jam
         : new Date(); // Fallback jika tidak ada data
       const defaultEndTime = new Date(defaultStartTime.getTime() + 6 * 60 * 60 * 1000); // Tambahkan 6 jam untuk onEnd
-  
+
       setNewSchedule({
         id: 0,
         code: "",
@@ -97,13 +102,14 @@ const JadwalPage: React.FC = () => {
         branch_id: branchId || "",
         sensor_id: "",
         weight: "",
+        TargetWeight: "",
         onStart: defaultStartTime.toISOString().slice(0, 16), // Format untuk input datetime-local
         onEnd: defaultEndTime.toISOString().slice(0, 16), // Format untuk input datetime-local
         user_id: userId || "",
       });
     }
   };
-  
+
 
 
   const closeModal = () => {
@@ -128,6 +134,7 @@ const JadwalPage: React.FC = () => {
       onEnd: new Date(newSchedule.onEnd).toISOString(),
       code: newSchedule.code || "default_code",
       sensor_id: newSchedule.sensor_id || "",
+      TargetWeight: newSchedule.TargetWeight || "",
     };
 
     try {
@@ -144,6 +151,22 @@ const JadwalPage: React.FC = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (currentScheduleId !== null) {
+      try {
+        await deleteSchedule(currentScheduleId);
+      } catch (error) {
+        console.error('Error deleting sensor:', error);
+      }
+    }
+    closeDeleteModal();
+  };
+
+  const openDeleteModal = (id: number) => {
+    setCurrentScheduleId(id);
+    setModal({ ...modal, deleteModalIsOpen: true });
+  };
+
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleDateString();
@@ -152,6 +175,10 @@ const JadwalPage: React.FC = () => {
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const closeDeleteModal = () => {
+    setModal({ ...modal, deleteModalIsOpen: false });
   };
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -172,18 +199,19 @@ const JadwalPage: React.FC = () => {
 
   const prevPage = () => setCurrentPage((prev) => Math.max(1, prev - 1));
   const nextPage = () => setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  console.log("Current Items:", currentItems);
 
   return (
     <div className="p-6 bg-primary-color min-h-screen">
       <div className="flex justify-between items-center mb-5">
         <h1 className="text-4xl font-bold text-white">Jadwal</h1>
-        <button
+        {/* <button
           onClick={() => openModal()}
           className="bg-tertiary-color text-white p-2 px-4 rounded-lg flex items-center"
         >
           <span className="mr-2">Add</span>
           <Icon icon="mdi:plus" />
-        </button>
+        </button> */}
       </div>
 
       <div className="bg-secondary-color rounded-lg text-white shadow-md mt-20 overflow-x-auto">
@@ -192,6 +220,7 @@ const JadwalPage: React.FC = () => {
             <tr>
               <th className="py-4 px-2">Deskripsi</th>
               <th className="py-4 px-2">Berat</th>
+              <th className="py-4 px-2">Target Berat</th>
               <th className="py-4 px-2">Sensor Code</th>
               <th className="py-4 px-2">Tanggal Mulai</th>
               <th className="py-4 px-2">Waktu Mulai</th>
@@ -201,12 +230,14 @@ const JadwalPage: React.FC = () => {
           <tbody>
             {currentItems && currentItems.length > 0 ? (
               currentItems.map((item, index) => (
+                console.log("Item:", item),
                 <tr
                   key={item.id}
                   className={`${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}
                 >
                   <td className="py-4 px-2">{item.description}</td>
                   <td className="py-4 px-2">{item.weight}</td>
+                  <td className="py-4 px-2">{item.TargetWeight}</td>
                   <td className="py-4 px-2">
                     {item.sensor_id
                       ? alatData
@@ -218,14 +249,12 @@ const JadwalPage: React.FC = () => {
                   <td className="py-4 px-2">{formatDate(item.onStart)}</td>
                   <td className="py-4 px-2">{formatTime(item.onStart)}</td>
                   <td className="py-4 px-2 flex justify-center space-x-2">
-                    <button className="text-white" onClick={() => openModal(item)}>
+                    {/* <button className="text-white" onClick={() => openModal(item)}>
                       <Icon icon="mdi:pencil" className="w-6 h-6" />
-                    </button>
+                    </button> */}
                     <button
                       className="text-red-700"
-                      onClick={async () => {
-                        if (item.id) await deleteSchedule(item.id);
-                      }}
+                      onClick={() => openDeleteModal(item?.id)}
                     >
                       <Icon icon="mdi:delete" className="w-6 h-6" />
                     </button>
@@ -265,8 +294,8 @@ const JadwalPage: React.FC = () => {
             onClick={nextPage}
             disabled={currentPage === totalPages}
             className={`px-4 py-2 rounded-md ${currentPage === totalPages
-                ? "bg-secondary-color text-gray-500"
-                : "bg-secondary-color text-white"
+              ? "bg-secondary-color text-gray-500"
+              : "bg-secondary-color text-white"
               }`}
           >
             <Icon icon="akar-icons:chevron-right" className="w-5 h-5" />
@@ -274,13 +303,14 @@ const JadwalPage: React.FC = () => {
         </div>
       </div>
 
-      <Modal
+      {/* <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
         contentLabel={isEditing ? "Edit Schedule" : "Add Schedule"}
         className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-4xl mx-auto my-20"
         overlayClassName="fixed inset-0 flex items-center justify-center"
       >
+        <h2 className="text-2xl font-bold text-white mb-4">{isEditing ? 'Edit Schedule' : 'Add Schedule'}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-white mb-2">Deskripsi</label>
@@ -362,6 +392,25 @@ const JadwalPage: React.FC = () => {
             </button>
           </div>
         </form>
+      </Modal> */}
+
+      <Modal
+        isOpen={deleteModalIsOpen}
+        onRequestClose={closeDeleteModal}
+        contentLabel="Delete Sensor"
+        className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-md mx-auto my-20"
+        overlayClassName="fixed inset-0 flex items-center justify-center"
+      >
+        <h2 className="text-2xl font-bold text-white mb-4">Delete Schedule</h2>
+        <p className="text-white mb-4">Are you sure you want to delete this Schedule?</p>
+        <div className="flex justify-end space-x-4">
+          <button onClick={closeDeleteModal} className="bg-gray-500 text-white p-2 rounded">
+            Cancel
+          </button>
+          <button onClick={handleDelete} className="bg-red-700 text-white p-2 rounded">
+            Delete
+          </button>
+        </div>
       </Modal>
     </div>
   );

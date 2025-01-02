@@ -94,6 +94,8 @@ export default function Home() {
   const nextPage = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
   const prevPage = () => currentPage > 1 && setCurrentPage(currentPage - 1);
 
+  console.log('total feeding given:', totalFeedingGiven);
+
   return (
     <div className="flex bg-primary-color">
       <SideNav />
@@ -116,7 +118,7 @@ export default function Home() {
                 </div>
                 <div className="flex flex-col bg-primary-color rounded-lg text-center text-white p-4 h-full">
                   <div className="bg-secondary-color py-4 rounded-t-lg flex items-center justify-center h-24 px-2">
-                    <span className="text-lg break-words whitespace-normal">Pakan yang tersedia</span>
+                    <span className="text-lg break-words whitespace-normal">Target Pakan</span>
                   </div>
                   <div className="flex-1 p-6 bg-tertiary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
                     <Icon icon="mdi:fish-food" className="w-12 h-12" />
@@ -131,7 +133,7 @@ export default function Home() {
                 </div>
                 <div className="flex flex-col bg-primary-color rounded-lg text-center text-white p-4 h-full">
                   <div className="bg-secondary-color py-4 rounded-t-lg flex items-center justify-center h-24 px-2">
-                    <span className="text-lg break-words whitespace-normal">Pakan yang sudah diberikan</span>
+                    <span className="text-lg break-words whitespace-normal">Total pakan</span>
                   </div>
                   <div className="flex-1 p-6 bg-tertiary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
                     <Icon icon="mdi:fish-food-outline" className="w-12 h-12" />

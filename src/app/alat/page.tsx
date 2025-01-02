@@ -342,7 +342,6 @@ const AlatPage: React.FC = () => {
         </form>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
       <Modal
         isOpen={deleteModalIsOpen}
         onRequestClose={closeDeleteModal}
