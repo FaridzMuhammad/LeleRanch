@@ -1,22 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
-import { useAlat } from "@/hooks/useFetchAlat";
-import { useLaporan } from "@/hooks/useFetchLaporan";
-import { useUser } from "@/hooks/useFetchUsers";
 import { useBranch } from "@/hooks/useFetchBranch";
 import { Icon } from "@iconify/react";
-
-
-interface Laporan {
-  id: number;
-  date: string | number | Date;
-  description: string;
-  user_id: string;
-  sensor_id: string;
-  branch_id: string;
-}
 
 const LaporanPage: React.FC = () => {
   const [modal, setModal] = useState({
@@ -24,163 +11,57 @@ const LaporanPage: React.FC = () => {
     deleteModalIsOpen: false,
     isEditing: false,
   });
+  const [branchName, setBranchName] = useState<string>("");
+  const [branchCity, setBranchCity] = useState<string>("");
+  const [editBranchData, setEditBranchData] = useState<any | null>(null);
 
-  const { modalIsOpen, deleteModalIsOpen } = modal;
-  const [currentReportId, setCurrentReportId] = useState<number | null>(null);
-  const [newReport, setNewReport] = useState({
-    tanggal: "",
-    catatan: "",
-    user_id: "",
-    sensor_id: "",
-    branch_id: "",
-  });
+  const { branchData, loading, submitBranch, updateBranch, deleteBranch, refetch } = useBranch("");
 
-  const [branchId, setBranchId] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const filteredBranchData = branchData.map((branch) => ({
+    id: branch.id,
+    name: branch.name,
+    city: branch.city,
+  }));
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedBranchId = localStorage.getItem('branch_id');
-      const storedUserId = localStorage.getItem('user_id');
+  // Handle create and update form submission
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
 
-      console.log('Stored Branch ID:', storedBranchId);
-      console.log('Stored User ID:', storedUserId);
-
-      setBranchId(storedBranchId || '');
-      setUserId(storedUserId || '');
-    }
-  }, []);
-
-  const { alatData } = useAlat(branchId as string);
-  const { laporanData, submitLaporan } = useLaporan(branchId);
-  const { userData } = useUser(branchId);
-  const { branchData } = useBranch(userId as string);
-
-  const openModal = (laporan: Laporan | null = null) => {
-    setModal({ modalIsOpen: true, deleteModalIsOpen: false, isEditing: !!laporan });
-    if (laporan) {
-      setCurrentReportId(laporan.id);
-      setNewReport({
-        tanggal: laporan.date ? new Date(laporan.date).toISOString().split("T")[0] : "",
-        catatan: laporan.description || "",
-        user_id: laporan.user_id,
-        sensor_id: laporan.sensor_id,
-        branch_id: laporan.branch_id,
-      });
+    if (editBranchData) {
+      await updateBranch(editBranchData.id, { name: branchName, city: branchCity });
     } else {
-      if (!userId || !branchId) {
-        alert("User ID atau Branch ID tidak ditemukan");
-        return;
-      }
-      setNewReport({
-        tanggal: "",
-        catatan: "",
-        user_id: userId,
-        sensor_id: "",
-        branch_id: branchId,
-      });
+      await submitBranch({ name: branchName, city: branchCity, user_id: 1 });  // user_id set statically
     }
-  };
 
-  const closeModal = () => {
+    setBranchName("");
+    setBranchCity("");
     setModal({ ...modal, modalIsOpen: false });
+    await refetch(); // refetch the data after submitting
   };
 
-  const openDeleteModal = (id: number) => {
-    setCurrentReportId(id);
-    setModal({ ...modal, deleteModalIsOpen: true });
+  // Handle Edit
+  const handleEdit = (branch: any) => {
+    setBranchName(branch.name);
+    setBranchCity(branch.city);
+    setEditBranchData(branch);
+    setModal({ ...modal, modalIsOpen: true });
   };
 
-  const closeDeleteModal = () => {
+  // Handle Delete
+  const handleDelete = async (branchId: number) => {
+    await deleteBranch(branchId);
     setModal({ ...modal, deleteModalIsOpen: false });
   };
-
-  const handleDelete = async () => {
-    if (currentReportId !== null) {
-      try {
-        
-      } catch (error) {
-        console.error("Error deleting report:", error);
-      }
-    }
-    closeDeleteModal();
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    setNewReport({ ...newReport, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (!newReport.tanggal) {
-      alert("Tanggal tidak boleh kosong.");
-      return;
-    }
-
-    const reportPayload = {
-      ...newReport,
-      date: newReport.tanggal,
-      description: newReport.catatan,
-    };
-
-    try {
-      await submitLaporan(reportPayload);
-    } catch (error) {
-      console.error("Error submitting report:", error);
-    }
-    closeModal();
-  };
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 7;
-
-  const sortedLaporanData = React.useMemo(() => {
-    if (!laporanData) return [];
-    return [...laporanData].sort((a, b) => b.id - a.id); // Sort descending by 'id'
-  }, [laporanData]);
-
-  const totalPages = Math.ceil(sortedLaporanData.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = sortedLaporanData.slice(indexOfFirstItem, indexOfLastItem);
-
-  const handlePageClick = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const nextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const pageRange = 2;
-  const startPage = Math.max(1, currentPage - pageRange);
-  const endPage = Math.min(totalPages, currentPage + pageRange);
-
-  const pagesToShow = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
   return (
     <div className="p-6 bg-primary-color min-h-screen">
       <div className="flex justify-between items-center mb-5">
-        <h1 className="text-4xl font-bold text-white">Laporan</h1>
+        <h1 className="text-4xl font-bold text-white">Branch Data</h1>
         <button
-          onClick={() => openModal()}
-          className="bg-tertiary-color text-white p-2 px-4 rounded-lg flex items-center"
+          onClick={() => setModal({ ...modal, modalIsOpen: true })}
+          className="bg-green-500 text-white py-2 px-4 rounded-md"
         >
-          <span className="mr-2">Add</span>
-          <Icon icon="mdi:plus" />
+          Create Branch
         </button>
       </div>
 
@@ -188,159 +69,106 @@ const LaporanPage: React.FC = () => {
         <table className="w-full text-center">
           <thead>
             <tr>
-              <th className="py-4 px-2">Tanggal</th>
-              <th className="py-4 px-2">User</th>
-              <th className="py-4 px-2">Sensor</th>
-              <th className="py-4 px-2">Branch</th>
-              <th className="py-4 px-2">Catatan</th>
+              <th className="py-4 px-2">Branch Name</th>
+              <th className="py-4 px-2">City</th>
+              <th className="py-4 px-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {currentItems.map((item, index) => (
-              <tr
-                key={index}
-                className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"
-                  }`}
-              >
-                <td className="py-4 px-2">{new Date(item.date).toLocaleDateString()}</td>
-                <td className="py-4 px-2">
-                  {userData.find((user) => user.id === Number(item.user_id))?.name || "Unknown User"}
-                </td>
-                <td className="py-4 px-2">
-                  {alatData.find((sensor) => sensor.id === Number(item.sensor_id))?.code || "Unknown Sensor"}
-                </td>
-                <td className="py-4 px-2">
-                  {branchData.find((branch) => branch.id === Number(item.branch_id))?.city || "Unknown Branch"}
-                </td>
-                <td className="py-4 px-2">{item.description}</td>
+            {loading ? (
+              <tr>
+                <td colSpan={3}>Loading...</td>
               </tr>
-            ))}
+            ) : (
+              filteredBranchData.map((branch, index) => (
+                <tr
+                  key={index}
+                  className={`border-t border-tertiary-color ${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}
+                >
+                  <td className="py-4 px-2">{branch.name}</td>
+                  <td className="py-4 px-2">{branch.city}</td>
+                  <td className="py-4 px-2">
+                    <button
+                      onClick={() => handleEdit(branch)}
+                      className="bg-blue-500 text-white py-1 px-3 rounded-md"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => setModal({ ...modal, deleteModalIsOpen: true })}
+                      className="bg-red-500 text-white py-1 px-3 rounded-md ml-2"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
-
-        <div className="flex justify-end py-4 space-x-2 px-4">
-          <button
-            onClick={prevPage}
-            disabled={currentPage === 1}
-            className={`px-4 py-2 rounded-md ${currentPage === 1 ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"}`}
-          >
-            <Icon icon="akar-icons:chevron-left" className="w-5 h-5" />
-          </button>
-          {pagesToShow.map((page) => (
-            <button
-              key={page}
-              className={`px-4 py-2 rounded-md ${currentPage === page ? "bg-primary-color text-white" : "bg-secondary-color text-white"}`}
-              onClick={() => handlePageClick(page)}
-            >
-              {page}
-            </button>
-          ))}
-          <button
-            onClick={nextPage}
-            disabled={currentPage === totalPages}
-            className={`px-4 py-2 rounded-md ${currentPage === totalPages ? "bg-secondary-color text-gray-500" : "bg-secondary-color text-white"}`}
-          >
-            <Icon icon="akar-icons:chevron-right" className="w-5 h-5" />
-          </button>
-        </div>
       </div>
 
-      {/* Create/Edit Modal */}
+      {/* Modal for Create/Update Branch */}
       <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={closeModal}
-        contentLabel="Add or Edit Report"
-        className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-4xl mx-auto my-20"
-        overlayClassName="fixed inset-0 flex items-center justify-center"
+        isOpen={modal.modalIsOpen}
+        onRequestClose={() => setModal({ ...modal, modalIsOpen: false })}
+        className="modal"
+        overlayClassName="overlay"
       >
-        <h2 className="text-2xl font-bold text-white mb-4">{"Add Report"}</h2>
+        <h2 className="text-2xl">{editBranchData ? "Edit Branch" : "Create Branch"}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-white mb-2">Tanggal</label>
+            <label htmlFor="name" className="block text-sm">Branch Name</label>
             <input
-              type="date"
-              name="tanggal"
-              value={newReport.tanggal}
-              onChange={handleChange}
-              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
+              type="text"
+              id="name"
+              value={branchName}
+              onChange={(e) => setBranchName(e.target.value)}
               required
+              className="input-field"
             />
           </div>
           <div className="mb-4">
-            <label className="block text-white mb-2">User ID</label>
+            <label htmlFor="city" className="block text-sm">City</label>
             <input
-              type="number"
-              name="user_id"
-              value={newReport.user_id}
-              onChange={handleChange}
-              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
+              type="text"
+              id="city"
+              value={branchCity}
+              onChange={(e) => setBranchCity(e.target.value)}
               required
+              className="input-field"
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-white mb-2">Sensor ID</label>
-            <select
-              name="sensor_id"
-              value={newReport.sensor_id}
-              onChange={handleChange}
-              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
-              required
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="bg-blue-500 text-white py-2 px-4 rounded-md"
             >
-              <option value="">Pilih Sensor</option>
-              {alatData.map((sensor) => (
-                <option key={sensor.id} value={sensor.id}>
-                  {sensor.code}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-4">
-            <label className="block text-white mb-2">Branch ID</label>
-            <input
-              type="number"
-              name="branch_id"
-              value={newReport.branch_id}
-              onChange={handleChange}
-              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-white mb-2">Catatan</label>
-            <textarea
-              name="catatan"
-              value={newReport.catatan}
-              onChange={handleChange}
-              className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
-              required
-            />
-          </div>
-          <div className="flex justify-end space-x-4">
-            <button type="button" onClick={closeModal} className="bg-gray-500 text-white p-2 rounded-lg">
-              Cancel
-            </button>
-            <button type="submit" className="bg-tertiary-color text-white p-2 rounded-lg">
-              {"Create"}
+              {editBranchData ? "Update" : "Create"}
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
+      {/* Modal for Delete Confirmation */}
       <Modal
-        isOpen={deleteModalIsOpen}
-        onRequestClose={closeDeleteModal}
-        contentLabel="Delete Report"
-        className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-md mx-auto my-20"
-        overlayClassName="fixed inset-0 flex items-center justify-center"
+        isOpen={modal.deleteModalIsOpen}
+        onRequestClose={() => setModal({ ...modal, deleteModalIsOpen: false })}
+        className="modal"
+        overlayClassName="overlay"
       >
-        <h2 className="text-2xl font-bold text-white mb-4">Delete Report</h2>
-        <p className="text-white mb-4">Are you sure you want to delete this report?</p>
-        <div className="flex justify-end space-x-4">
-          <button onClick={closeDeleteModal} className="bg-gray-500 text-white p-2 rounded">
+        <h2 className="text-xl">Are you sure you want to delete this branch?</h2>
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={() => setModal({ ...modal, deleteModalIsOpen: false })}
+            className="bg-gray-500 text-white py-2 px-4 rounded-md mr-2"
+          >
             Cancel
           </button>
-          <button onClick={handleDelete} className="bg-red-700 text-white p-2 rounded">
+          <button
+            onClick={() => handleDelete(editBranchData?.id as number)}
+            className="bg-red-500 text-white py-2 px-4 rounded-md"
+          >
             Delete
           </button>
         </div>
