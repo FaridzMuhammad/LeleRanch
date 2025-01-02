@@ -30,7 +30,7 @@ const LaporanPage: React.FC = () => {
     if (editBranchData) {
       await updateBranch(editBranchData.id, { name: branchName, city: branchCity });
     } else {
-      await submitBranch({ name: branchName, city: branchCity, user_id: 1 });  // user_id set statically
+      await submitBranch({ name: branchName, city: branchCity, user_id: 1, active_time: new Date().toISOString() });  // user_id set statically
     }
 
     setBranchName("");
