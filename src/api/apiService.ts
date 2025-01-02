@@ -30,7 +30,22 @@ api.interceptors.response.use(
     }
 );
 
-// Define a generic type for the API response
+// export const apiPost = async (url: string, data: any) => {
+//   try {
+//     const response = await axios.post(url, data);
+//     return response.data;
+//   } catch (error) {
+//     if (axios.isAxiosError(error)) {
+//       // Forward the error message from BE
+//       if (error.response?.data?.message) {
+//         throw new Error(error.response.data.message);
+//       }
+//       throw error;
+//     }
+//     throw error;
+//   }
+// };
+
 export const apiPost = async <T, U>(url: string, data: U): Promise<T> => {
     try {
         const response = await api.post<T>(url, data);

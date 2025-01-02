@@ -18,8 +18,8 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
     icon: <Icon icon="lucide:settings" width="24" height="24" />,
   },
   {
-    title: 'Laporan',
-    path: '/laporan',
+    title: 'branchn',
+    path: '/branch',
     icon: <Icon icon="lucide:file-text" width="24" height="24" />,
   },
   {

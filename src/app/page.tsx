@@ -1,7 +1,7 @@
 "use client";
-
 import React, { useState } from "react";
 import { apiPost } from "../api/apiService";
+import axios from "axios";
 
 
 export default function Login() {
@@ -11,38 +11,54 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    setErrorMessage(""); // Reset error message
+    
     try {
-        // Panggil API login dan pastikan tipe respons sesuai dengan struktur sebenarnya
-        const response: {
-            message: string;
-            token: string;
-            user: { branch_id: number; id: number; email: string; name: string; role: string };
-        } = await apiPost("http://103.127.138.198:8080/api/login", { email, password });
+      // Panggil API login langsung dengan axios untuk better error handling
+      const response = await axios.post("http://103.127.138.198:8080/api/login", { 
+        email, 
+        password 
+      });
+      
+      console.log("Login response:", response.data);
 
-        // Simpan token di localStorage
-        const { token, user } = response; // Ambil token dan user dari respons
-        const { branch_id, id: user_id } = user; // Ambil branch_id dan user_id dari user
+      // Jika login sukses
+      const { token, user } = response.data;
+      const { branch_id, id: user_id } = user;
+      
+      localStorage.setItem("token", token);
+      localStorage.setItem("branch_id", branch_id.toString());
+      localStorage.setItem("user_id", user_id.toString());
+      
+      alert("Login successful!");
+      window.location.href = "/dashboard";
 
-        localStorage.setItem("token", token);
-        console.log("API Response:", response);
-
-        // Simpan branch_id dan user_id di cookies
-        localStorage.setItem("token", token);
-        localStorage.setItem("branch_id", branch_id.toString());
-        localStorage.setItem("user_id", user_id.toString());
-
-        console.log("token:", token);
-
-        // Redirect ke dashboard
-        alert("Login successful!");
-        window.location.href = "/dashboard";
     } catch (error) {
-        setErrorMessage("Login failed. Please check your credentials.");
-        console.error("Error:", error);
-    }
-};
+      if (axios.isAxiosError(error)) {
+        // Log error untuk debugging
+        console.error("Login error details:", {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.response?.data?.message
+        });
 
+        // Jika ada pesan error dari BE, gunakan itu
+        if (error.response?.data?.message) {
+          setErrorMessage(error.response.data.message);
+        } 
+        // Jika status 403, berikan pesan spesifik
+        else if (error.response?.status === 403) {
+          setErrorMessage("Unauthorized role: admin");
+        }
+        // Fallback error message
+        else {
+          setErrorMessage(error.message || "Login failed. Please try again.");
+        }
+      } else {
+        setErrorMessage("An unexpected error occurred");
+      }
+    }
+  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-primary-color">
