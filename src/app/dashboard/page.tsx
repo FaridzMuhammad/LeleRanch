@@ -39,7 +39,7 @@ export default function Home() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [nextFeedingTime, setNextFeedingTime] = useState<string>('');
-  const [totalFeedingGiven, setTotalFeedingGiven] = useState<number>(0);
+  const [totalFeedingGiven, setTotalFeedingGiven] = useState<string>('0');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage] = useState<number>(7);
   const [targetWeight, setTargetWeight] = useState<string | null>(null);
@@ -66,21 +66,29 @@ export default function Home() {
 
   useEffect(() => {
     if (scheduleData && scheduleData.length > 0) {
-      const reversedData = [...scheduleData].reverse(); // Data terbaru muncul lebih dulu
+      const reversedData = [...scheduleData].reverse();
       const lastFeeding = reversedData[0];
-      const nextFeeding = calculateNextFeedingTime(lastFeeding.onStart, 6); // Tambah 6 jam
+      const nextFeeding = calculateNextFeedingTime(lastFeeding.onStart, 6);
       setNextFeedingTime(nextFeeding);
 
-      const today = new Date().toISOString().slice(0, 10); // Mendapatkan tanggal hari ini (format YYYY-MM-DD)
+      const today = new Date().toISOString().slice(0, 10);
       const totalFeedingToday = reversedData
-        .filter(item => item.onStart.slice(0, 10) === today) // Memfilter hanya data hari ini
+        .filter(item => item.onStart.slice(0, 10) === today)
         .reduce((acc, item) => acc + Number(item.weight || 0), 0);
-      setTotalFeedingGiven(totalFeedingToday);
-      const latestTargetWeight = reversedData[0]?.TargetWeight || 'Tidak tersedia';
-      setTargetWeight(latestTargetWeight);
 
+      const formattedTotalFeedingToday = totalFeedingToday >= 1000
+        ? `${(totalFeedingToday / 1000).toFixed(2)} kg`
+        : `${totalFeedingToday} g`;
+      setTotalFeedingGiven(formattedTotalFeedingToday);
+
+      const latestTargetWeight = reversedData[0]?.TargetWeight || '0';
+      const formattedTargetWeight = Number(latestTargetWeight) >= 1000
+        ? `${(Number(latestTargetWeight) / 1000).toFixed(2)} kg`
+        : `${latestTargetWeight} g`;
+      setTargetWeight(formattedTargetWeight);
     }
   }, [scheduleData]);
+
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -99,7 +107,12 @@ export default function Home() {
   const nextPage = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
   const prevPage = () => currentPage > 1 && setCurrentPage(currentPage - 1);
 
-  console.log('total feeding given:', totalFeedingGiven);
+  const formatWeight = (weight: number) => {
+    if (weight >= 1000) {
+      return `${(weight / 1000).toFixed(2)} Kg`;
+    }
+    return `${weight} Gram`;
+  };
 
   return (
     <div className="flex bg-primary-color">
@@ -143,7 +156,7 @@ export default function Home() {
                   </div>
                   <div className="flex-1 p-6 bg-tertiary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
                     <Icon icon="mdi:fish-food-outline" className="w-12 h-12" />
-                    <span className="text-2xl font-bold mt-2">{totalFeedingGiven} Kg</span>
+                    <span className="text-2xl font-bold mt-2">{totalFeedingGiven}</span>
                   </div>
                 </div>
               </div>
@@ -163,7 +176,9 @@ export default function Home() {
                       <tr key={index} className={`border-t border-tertiary-color ${index % 2 === 0 ? 'bg-tertiary-color' : 'bg-primary-color'}`}>
                         <td className="py-4 px-2">{formatDate(item?.onStart)}</td>
                         <td className="py-4 px-2">{formatTime(item?.onStart)}</td>
-                        <td className="py-4 px-2">{item?.weight}</td>
+                        <td className="py-4 px-2">{Number(item?.weight) >= 1000
+                          ? `${(Number(item?.weight) / 1000).toFixed(2)} kg`
+                          : `${item?.weight} g`}</td>
                         <td className="py-4 px-2">{item?.sensor_id
                           ? alatData
                             ?.filter(alat => alat?.id === Number(item?.sensor_id))

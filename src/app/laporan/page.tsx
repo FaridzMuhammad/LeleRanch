@@ -7,7 +7,7 @@ import { Icon } from "@iconify/react";
 
 
 
-const branchPage: React.FC = () => {
+const LaporanPage: React.FC = () => {
   const [modal, setModal] = useState({
     modalIsOpen: false,
     deleteModalIsOpen: false,
@@ -448,4 +448,4 @@ const branchPage: React.FC = () => {
   );
 };
 
-export default branchPage;
+export default LaporanPage;
