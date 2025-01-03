@@ -22,6 +22,8 @@ export interface Schedule {
 export default function Home() {
   const [branchId, setBranchId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -89,13 +91,29 @@ export default function Home() {
     }
   }, [scheduleData]);
 
+  const filteredItems = scheduleData
+    ? scheduleData.filter(item => {
+      if (!startDate && !endDate) return true;
+      const itemDate = new Date(item?.onStart);
+      const start = startDate ? new Date(startDate) : null;
+      const end = endDate ? new Date(endDate) : null;
+
+      return (
+        (!start || itemDate >= start) &&
+        (!end || itemDate <= end)
+      );
+    })
+    : [];
+
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 
-  const currentItems = scheduleData ? [...scheduleData].reverse().slice(indexOfFirstItem, indexOfLastItem) : [];
+  const currentItems = filteredItems
+    ? filteredItems.slice(indexOfFirstItem, indexOfLastItem)
+    : [];
 
-  const totalPages = Math.ceil(scheduleData?.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
 
   const pageRange = 2;
   const startPage = Math.max(currentPage - pageRange, 1);
@@ -103,16 +121,8 @@ export default function Home() {
 
   const pageToShow = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
-  const handlePageClick = (page: number) => setCurrentPage(page);
   const nextPage = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
   const prevPage = () => currentPage > 1 && setCurrentPage(currentPage - 1);
-
-  const formatWeight = (weight: number) => {
-    if (weight >= 1000) {
-      return `${(weight / 1000).toFixed(2)} Kg`;
-    }
-    return `${weight} Gram`;
-  };
 
   return (
     <div className="flex bg-primary-color">
@@ -142,12 +152,6 @@ export default function Home() {
                   <div className="flex-1 p-6 bg-tertiary-color rounded-b-lg flex flex-col items-center justify-center shadow-lg">
                     <Icon icon="mdi:fish-food" className="w-12 h-12" />
                     <span className="text-2xl font-bold mt-2">{targetWeight}</span>
-                    {/* <button
-                      className="pt-4 px-4 text-white rounded-md hover:text-blue-400"
-                      onClick={openModal}
-                    >
-                      Detail
-                    </button> */}
                   </div>
                 </div>
                 <div className="flex flex-col bg-primary-color rounded-lg text-center text-white p-4 h-full">
@@ -161,7 +165,33 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="bg-secondary-color rounded-lg text-white shadow-md mt-20 overflow-x-auto">
+
+              <div className="flex space-x-4 my-4 mx-4 justify-end">
+                <input
+                  type="date"
+                  value={startDate || ''}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="p-2 rounded-md bg-tertiary-color text-white"
+                />
+                <input
+                  type="date"
+                  value={endDate || ''}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="p-2 rounded-md bg-tertiary-color text-white"
+                />
+                <button
+                  onClick={() => {
+                    setStartDate(null);
+                    setEndDate(null);
+                  }}
+                  className="p-2 rounded-md bg-tertiary-color text-white"
+                >
+                  Reset
+                </button>
+              </div>
+              
+              <div className="bg-secondary-color rounded-lg text-white shadow-md mt-5 overflow-x-auto">
+
                 <table className="w-full text-center">
                   <thead>
                     <tr>
