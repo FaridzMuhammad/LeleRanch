@@ -6,9 +6,7 @@ import { useSchedule } from "@/hooks/useFetchSchedule";
 import { Icon } from "@iconify/react";
 import { useAlat } from "@/hooks/useFetchAlat";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-
-autoTable(jsPDF.API, {});
+import "jspdf-autotable";
 
 interface Schedule {
   id: number;
