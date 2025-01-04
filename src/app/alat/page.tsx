@@ -245,9 +245,9 @@ const AlatPage: React.FC = () => {
             <tr>
               <th className="py-4 px-2">Code</th>
               <th className="py-4 px-2">Branch City</th>
-              <th className="py-4 px-2">Is On</th>
-              <th className="py-4 px-2">isOpen</th>
-              <th className="py-4 px-2">isDetected</th>
+              {/* <th className="py-4 px-2">Is On</th> */}
+              <th className="py-4 px-2">Status</th>
+              {/* <th className="py-4 px-2">isDetected</th> */}
               <th className="py-4 px-2">Action</th>
             </tr>
           </thead>
@@ -263,9 +263,9 @@ const AlatPage: React.FC = () => {
                     )?.city || "Unknown Branch"
                   }
                 </td>
-                <td className="py-4 px-2">{searchResult.isOn ? "Yes" : "No"}</td>
-                <td className="py-4 px-2">{searchResult.isOpen ? "Yes" : "No"}</td>
-                <td className="py-4 px-2">{searchResult.isDetected ? "Yes" : "No"}</td>
+                {/* <td className="py-4 px-2">{searchResult.isOn ? "Yes" : "No"}</td> */}
+                <td className="py-4 px-2">{searchResult.isOpen ? "Online" : "Offline"}</td>
+                {/* <td className="py-4 px-2">{searchResult.isDetected ? "Yes" : "No"}</td> */}
                 <td className="py-4 px-2 flex justify-center space-x-2">
                   <button className="text-white" onClick={() => openModal(searchResult)}>
                     <Icon icon="mdi:pencil" className="w-6 h-6" />
@@ -291,9 +291,9 @@ const AlatPage: React.FC = () => {
                       )?.city || "Unknown Branch"
                     }
                   </td>
-                  <td className="py-4 px-2">{item.isOn ? "Yes" : "No"}</td>
-                  <td className="py-4 px-2">{item.isOpen ? "Yes" : "No"}</td>
-                  <td className="py-4 px-2">{item.isDetected ? "Yes" : "No"}</td>
+                  {/* <td className="py-4 px-2">{item.isOn ? "Yes" : "No"}</td> */}
+                  <td className="py-4 px-2">{item.isOpen ? "Online" : "Offline"}</td>
+                  {/* <td className="py-4 px-2">{item.isDetected ? "Yes" : "No"}</td> */}
                   <td className="py-4 px-2 flex justify-center space-x-2">
                     <button className="text-white" onClick={() => openModal(item)}>
                       <Icon icon="mdi:pencil" className="w-6 h-6" />
@@ -399,7 +399,7 @@ const AlatPage: React.FC = () => {
               required
             />
           </div>
-          <div className="mb-4">
+          {/* <div className="mb-4">
             <label className="block text-white mb-2">Is On</label>
             <input
               type="checkbox"
@@ -407,9 +407,9 @@ const AlatPage: React.FC = () => {
               checked={newSensor?.isOn}
               onChange={(e) => setNewSensor({ ...newSensor, isOn: e.target.checked })}
             />
-          </div>
+          </div> */}
           <div className="mb-4">
-            <label className="block text-white mb-2">Is On</label>
+            <label className="block text-white mb-2">Status</label>
             <input
               type="checkbox"
               name="isOpen"
@@ -417,7 +417,7 @@ const AlatPage: React.FC = () => {
               onChange={(e) => setNewSensor({ ...newSensor, isOpen: e.target.checked })}
             />
           </div>
-          <div className="mb-4">
+          {/* <div className="mb-4">
             <label className="block text-white mb-2">Is On</label>
             <input
               type="checkbox"
@@ -425,7 +425,7 @@ const AlatPage: React.FC = () => {
               checked={newSensor?.isDetected}
               onChange={(e) => setNewSensor({ ...newSensor, isDetected: e.target.checked })}
             />
-          </div>
+          </div> */}
           <div className="flex justify-end space-x-4">
             <button type="button" onClick={closeModal} className="bg-gray-500 text-white p-2 rounded-lg">
               Cancel
