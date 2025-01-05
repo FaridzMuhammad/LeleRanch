@@ -7,7 +7,7 @@ import { useAlat } from '@/hooks/useFetchAlat';
 import { useBranch } from '@/hooks/useFetchBranch';
 
 
-const AlatPage: React.FC = () => {
+const SensorPage: React.FC = () => {
   const [modal, setModal] = useState({
     modalIsOpen: false,
     isEditing: false,
@@ -211,7 +211,7 @@ const AlatPage: React.FC = () => {
   return (
     <div className="p-6 bg-primary-color min-h-screen">
       <div className="flex justify-between items-center mb-5">
-        <h1 className="text-4xl font-bold text-white text-center md:text-left">Alat</h1>
+        <h1 className="text-4xl font-bold text-white text-center md:text-left">Sensor</h1>
         <button onClick={() => openModal()} className="bg-tertiary-color text-white p-2 px-4 rounded-lg flex items-center">
           <span className="mr-2">Add</span>
           <Icon icon="mdi:plus" />
@@ -459,5 +459,5 @@ const AlatPage: React.FC = () => {
   );
 };
 
-export default AlatPage;
+export default SensorPage;
 

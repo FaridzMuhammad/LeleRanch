@@ -13,8 +13,8 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
     icon: <Icon icon="lucide:clock" width="24" height="24" />,
   },
   {
-    title: 'Alat',
-    path: '/alat',
+    title: 'Sensor',
+    path: '/sensor',
     icon: <Icon icon="lucide:settings" width="24" height="24" />,
   },
   {
