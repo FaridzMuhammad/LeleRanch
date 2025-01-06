@@ -16,7 +16,7 @@ export interface Schedule {
   onStart: string;
   weight: number;
   sensor_id?: string;
-  TargetWeight: string;
+  Targetweight: string;
 }
 
 export default function Home() {
@@ -83,7 +83,7 @@ export default function Home() {
         : `${totalFeedingToday} g`;
       setTotalFeedingGiven(formattedTotalFeedingToday);
 
-      const latestTargetWeight = reversedData[0]?.TargetWeight || '0';
+      const latestTargetWeight = reversedData[0]?.Targetweight || '0';
       const formattedTargetWeight = Number(latestTargetWeight) >= 1000
         ? `${(Number(latestTargetWeight) / 1000).toFixed(2)} kg`
         : `${latestTargetWeight} g`;

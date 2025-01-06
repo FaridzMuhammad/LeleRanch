@@ -15,7 +15,7 @@ interface Schedule {
   branch_id: string;
   sensor_id?: string;
   weight: string;
-  TargetWeight?: string;
+  Targetweight?: string;
   onStart: string;
   onEnd: string;
   user_id: string;
@@ -86,7 +86,7 @@ const JadwalPage: React.FC = () => {
     branch_id: branchId || "",
     sensor_id: "",
     weight: "",
-    TargetWeight: "",
+    Targetweight: "",
     onStart: "",
     onEnd: "",
     user_id: userId || "",
@@ -122,7 +122,7 @@ const JadwalPage: React.FC = () => {
         branch_id: branchId || "",
         sensor_id: "",
         weight: "",
-        TargetWeight: "",
+        Targetweight: "",
         onStart: defaultStartTime.toISOString().slice(0, 16), // Format untuk input datetime-local
         onEnd: defaultEndTime.toISOString().slice(0, 16), // Format untuk input datetime-local
         user_id: userId || "",
@@ -167,7 +167,7 @@ const JadwalPage: React.FC = () => {
         Number(item.weight) >= 1000 ? `${(Number(item.weight) / 1000).toFixed(2)} kg` : `${item.weight} g`
       );
       if (selectedColumns.includes("Target Berat")) row.push(
-        Number(item.TargetWeight) >= 1000 ? `${(Number(item.TargetWeight) / 1000).toFixed(2)} kg` : `${item.TargetWeight} g`
+        Number(item.Targetweight) >= 1000 ? `${(Number(item.Targetweight) / 1000).toFixed(2)} kg` : `${item.Targetweight} g`
       );
       return row;
     });
@@ -214,7 +214,7 @@ const JadwalPage: React.FC = () => {
       onEnd: new Date(newSchedule.onEnd).toISOString(),
       code: newSchedule.code || "default_code",
       sensor_id: newSchedule.sensor_id || "",
-      TargetWeight: newSchedule.TargetWeight || "",
+      Targetweight: newSchedule.Targetweight || "",
     };
 
     try {
@@ -310,17 +310,20 @@ const JadwalPage: React.FC = () => {
             {currentItems && currentItems.length > 0 ? (
               currentItems.map((item, index) => (
                 console.log("Item:", item),
+                
                 <tr
                   key={item.id}
                   className={`${index % 2 === 0 ? "bg-tertiary-color" : "bg-primary-color"}`}
                 >
+                  
                   <td className="py-4 px-2">{item.description}</td>
                   <td className="py-4 px-2">{Number(item?.weight) >= 1000
                     ? `${(Number(item?.weight) / 1000).toFixed(2)} kg`
                     : `${item?.weight} g`}</td>
-                  <td className="py-4 px-2">{Number(item?.TargetWeight) >= 1000
-                    ? `${(Number(item?.TargetWeight) / 1000).toFixed(2)} kg`
-                    : `${item?.TargetWeight} g`}</td>
+                  <td className="py-4 px-2">{Number(item?.Targetweight) >= 1000
+                    ? `${(Number(item?.Targetweight) / 1000).toFixed(2)} kg`
+                    : `${item?.Targetweight} g` 
+                    }</td>
                   <td className="py-4 px-2">
                     {item.sensor_id
                       ? alatData
