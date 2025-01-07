@@ -72,24 +72,21 @@ export default function Home() {
       const lastFeeding = reversedData[0];
       const nextFeeding = calculateNextFeedingTime(lastFeeding.onStart, 6);
       setNextFeedingTime(nextFeeding);
-
-      const today = new Date().toISOString().slice(0, 10);
-      const totalFeedingToday = reversedData
-        .filter(item => item.onStart.slice(0, 10) === today)
-        .reduce((acc, item) => acc + Number(item.weight || 0), 0);
-
-      const formattedTotalFeedingToday = totalFeedingToday >= 1000
-        ? `${(totalFeedingToday / 1000).toFixed(2)} kg`
-        : `${totalFeedingToday} g`;
-      setTotalFeedingGiven(formattedTotalFeedingToday);
-
-      const latestTargetWeight = reversedData[0]?.Targetweight || '0';
+  
+      const latestWeight = reversedData[0]?.weight || '0';
+      const formattedLatestWeight = Number(latestWeight) >= 1000
+        ? `${(Number(latestWeight) / 1000).toFixed(2)} kg`
+        : `${latestWeight} g`;
+      setTotalFeedingGiven(formattedLatestWeight);
+  
+      const latestTargetWeight = reversedData[0]?.TargetWeight || '0';
       const formattedTargetWeight = Number(latestTargetWeight) >= 1000
         ? `${(Number(latestTargetWeight) / 1000).toFixed(2)} kg`
         : `${latestTargetWeight} g`;
       setTargetWeight(formattedTargetWeight);
     }
   }, [scheduleData]);
+  
 
   const filteredItems = scheduleData
     ? scheduleData.filter(item => {
@@ -110,8 +107,8 @@ export default function Home() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 
   const currentItems = filteredItems
-    ? filteredItems.slice(indexOfFirstItem, indexOfLastItem)
-    : [];
+  ? [...filteredItems].reverse().slice(indexOfFirstItem, indexOfLastItem)
+  : [];
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
 

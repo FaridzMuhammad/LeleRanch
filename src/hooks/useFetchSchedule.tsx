@@ -8,7 +8,7 @@ interface Schedule {
   description: string;
   branch_id: string;
   weight: string;
-  Targetweight: string;
+  TargetWeight: string;
   onStart: string;
   onEnd: string;
   user_id: string;

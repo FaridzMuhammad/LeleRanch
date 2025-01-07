@@ -15,7 +15,7 @@ interface Schedule {
   branch_id: string;
   sensor_id?: string;
   weight: string;
-  Targetweight?: string;
+  TargetWeight?: string;
   onStart: string;
   onEnd: string;
   user_id: string;
@@ -86,7 +86,7 @@ const JadwalPage: React.FC = () => {
     branch_id: branchId || "",
     sensor_id: "",
     weight: "",
-    Targetweight: "",
+    TargetWeight: "",
     onStart: "",
     onEnd: "",
     user_id: userId || "",
@@ -122,7 +122,7 @@ const JadwalPage: React.FC = () => {
         branch_id: branchId || "",
         sensor_id: "",
         weight: "",
-        Targetweight: "",
+        TargetWeight: "",
         onStart: defaultStartTime.toISOString().slice(0, 16), // Format untuk input datetime-local
         onEnd: defaultEndTime.toISOString().slice(0, 16), // Format untuk input datetime-local
         user_id: userId || "",
@@ -167,7 +167,7 @@ const JadwalPage: React.FC = () => {
         Number(item.weight) >= 1000 ? `${(Number(item.weight) / 1000).toFixed(2)} kg` : `${item.weight} g`
       );
       if (selectedColumns.includes("Target Berat")) row.push(
-        Number(item.Targetweight) >= 1000 ? `${(Number(item.Targetweight) / 1000).toFixed(2)} kg` : `${item.Targetweight} g`
+        Number(item.TargetWeight) >= 1000 ? `${(Number(item.TargetWeight) / 1000).toFixed(2)} kg` : `${item.TargetWeight} g`
       );
       return row;
     });
@@ -214,7 +214,7 @@ const JadwalPage: React.FC = () => {
       onEnd: new Date(newSchedule.onEnd).toISOString(),
       code: newSchedule.code || "default_code",
       sensor_id: newSchedule.sensor_id || "",
-      Targetweight: newSchedule.Targetweight || "",
+      TargetWeight: newSchedule.TargetWeight || "",
     };
 
     try {
@@ -320,9 +320,9 @@ const JadwalPage: React.FC = () => {
                   <td className="py-4 px-2">{Number(item?.weight) >= 1000
                     ? `${(Number(item?.weight) / 1000).toFixed(2)} kg`
                     : `${item?.weight} g`}</td>
-                  <td className="py-4 px-2">{Number(item?.Targetweight) >= 1000
-                    ? `${(Number(item?.Targetweight) / 1000).toFixed(2)} kg`
-                    : `${item?.Targetweight} g` 
+                  <td className="py-4 px-2">{Number(item?.TargetWeight) >= 1000
+                    ? `${(Number(item?.TargetWeight) / 1000).toFixed(2)} kg`
+                    : `${item?.TargetWeight} g` 
                     }</td>
                   <td className="py-4 px-2">
                     {item.sensor_id

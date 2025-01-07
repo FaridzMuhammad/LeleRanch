@@ -14,7 +14,6 @@ export default function Login() {
     setErrorMessage(""); // Reset error message
     
     try {
-      // Panggil API login langsung dengan axios untuk better error handling
       const response = await axios.post("http://103.127.138.198:8080/api/login", { 
         email, 
         password 
