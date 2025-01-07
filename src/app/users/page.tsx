@@ -87,6 +87,7 @@ const UsersPage: React.FC = () => {
   };
 
   const closeDeleteModal = () => setModal({ ...modal, deleteModalIsOpen: false });
+  const closemodal = () => setModal({ ...modal, modalIsOpen: false });
 
   const handleDelete = async () => {
     if (currentUserId !== null) {
@@ -318,6 +319,9 @@ const UsersPage: React.FC = () => {
             </>
           )}
           <div className="flex justify-end">
+            <button onClick={closeModal} className="bg-gray-500 text-white p-2 rounded-lg mr-4">
+              Cancel
+            </button>
             <button type="submit" className="bg-tertiary-color text-white py-2 px-6 rounded-lg">
               {isEditing ? "Update" : "Add"} User
             </button>
