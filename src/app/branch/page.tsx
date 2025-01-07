@@ -368,7 +368,7 @@ const branchPage: React.FC = () => {
         className="bg-secondary-color p-8 rounded-lg shadow-lg w-11/12 max-w-4xl mx-auto my-20"
         overlayClassName="fixed inset-0 flex items-center justify-center"
       >
-        <h2 className="text-2xl font-bold text-white mb-4">{isEditing ? 'Edit Sensor' : 'Add Sensor'}</h2>
+        <h2 className="text-2xl font-bold text-white mb-4">{isEditing ? 'Edit Branch' : 'Add Branch'}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-white mb-2">Branch Name</label>
