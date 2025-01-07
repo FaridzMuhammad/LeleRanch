@@ -156,9 +156,8 @@ const branchPage: React.FC = () => {
   };
 
   const closeModal = () => {
-    setModal({ ...modal, deleteModalIsOpen: false });
+    setModal({ ...modal, modalIsOpen: false, isEditing: false, deleteModalIsOpen: false });
   };
-  
 
   const openDeleteModal = (id: number) => {
     setCurrentBranchId(id);
