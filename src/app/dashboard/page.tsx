@@ -2,15 +2,9 @@
 
 import { Icon } from '@iconify/react';
 import { useState, useEffect } from 'react';
-import Modal from 'react-modal';
-
-import Header from '@/components/header';
-import HeaderMobile from '@/components/header-mobile';
-import MarginWidthWrapper from '@/components/margin-width-wrapper';
-import PageWrapper from '@/components/page-wrapper';
-import SideNav from '@/components/side-nav';
 import { useSchedule } from '@/hooks/useFetchSchedule';
 import { useAlat } from '@/hooks/useFetchAlat';
+
 
 export interface Schedule {
   onStart: string;
@@ -19,7 +13,7 @@ export interface Schedule {
   Targetweight: string;
 }
 
-export default function Home() {
+export default function Dashboard() {
   const [branchId, setBranchId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<string | null>(null);
@@ -123,12 +117,7 @@ export default function Home() {
 
   return (
     <div className="flex bg-primary-color">
-      <SideNav />
       <main className="flex-1 bg-primary-color">
-        <MarginWidthWrapper>
-          <Header />
-          <HeaderMobile />
-          <PageWrapper>
             <div className="p-6 bg-primary-color min-h-screen">
               <span className="font-bold text-4xl text-white block text-center md:text-left">Dashboard</span>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-12">
@@ -249,8 +238,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </PageWrapper>
-        </MarginWidthWrapper>
       </main>
 
       {/* <Modal

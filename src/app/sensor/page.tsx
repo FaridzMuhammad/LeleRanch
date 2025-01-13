@@ -299,7 +299,7 @@ const SensorPage: React.FC = () => {
                       <Icon icon="mdi:pencil" className="w-6 h-6" />
                     </button>
                     <button className="text-red-700" onClick={() => openDeleteModal(item.id)}>
-                      <Icon icon="mdi:delete" className="w-6 h-6"  />
+                      <Icon icon="mdi:delete" className="w-6 h-6" />
                     </button>
                   </td>
                 </tr>
@@ -365,16 +365,25 @@ const SensorPage: React.FC = () => {
             />
           </div>
           <div className="mb-4">
-            <label className="block text-white mb-2">Branch ID</label>
-            <input
-              type="text"
+            <label className="block text-white mb-2">Branch City</label>
+            <select
               name="branch_id"
-              value={newSensor?.branch_id}
-              onChange={handleChange}
+              value={newSensor.branch_id}
+              onChange={(e) => setNewSensor({ ...newSensor, branch_id: e.target.value })}
               className="w-full p-2 bg-secondary-color text-white border border-white rounded-lg"
               required
-            />
+            >
+              <option value="" disabled>
+                Select a Branch
+              </option>
+              {branchData?.map((branch: { id: number; city: string }) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.city}
+                </option>
+              ))}
+            </select>
           </div>
+
           <div className="mb-4">
             <label className="block text-white mb-2">Latitude</label>
             <input

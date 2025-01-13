@@ -38,8 +38,8 @@ const JadwalPage: React.FC = () => {
     "Tanggal",
     "Deskripsi",
     "Sensor Code",
-    "Berat",
     "Target Berat",
+    "Berat",
   ]);
 
 
@@ -151,7 +151,7 @@ const JadwalPage: React.FC = () => {
       return;
     }
 
-    const headers = [selectedColumns]; // Header berdasarkan pilihan pengguna
+    const headers = [selectedColumns];
     const tableData = filteredItems.map((item) => {
       const row: any[] = [];
       const formattedDate = item.onStart ? formatDate(item.onStart) : "Tanggal tidak tersedia";
@@ -419,7 +419,7 @@ const JadwalPage: React.FC = () => {
 
         <div className="mb-4">
           <label className="text-white mb-2 block">Pilih Kolom:</label>
-          {["Deskripsi", "Berat", "Target Berat", "Sensor Code"].map((column) => (
+          {["Deskripsi", "Sensor Code" , "Target Berat", "Berat"].map((column) => (
             <div key={column} className="flex items-center mb-2">
               <input
                 type="checkbox"
