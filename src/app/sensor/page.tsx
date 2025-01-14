@@ -292,7 +292,7 @@ const SensorPage: React.FC = () => {
                     }
                   </td>
                   {/* <td className="py-4 px-2">{item.isOn ? "Yes" : "No"}</td> */}
-                  <td className="py-4 px-2">{item.isOpen ? "Online" : "Offline"}</td>
+                  <td className="py-4 px-2">{item.isOn ? "Online" : "Offline"}</td>
                   {/* <td className="py-4 px-2">{item.isDetected ? "Yes" : "No"}</td> */}
                   <td className="py-4 px-2 flex justify-center space-x-2">
                     <button className="text-white" onClick={() => openModal(item)}>
@@ -408,16 +408,16 @@ const SensorPage: React.FC = () => {
               required
             />
           </div>
-          {/* <div className="mb-4">
-            <label className="block text-white mb-2">Is On</label>
+          <div className="mb-4">
+            <label className="block text-white mb-2">Status</label>
             <input
               type="checkbox"
               name="isOn"
               checked={newSensor?.isOn}
               onChange={(e) => setNewSensor({ ...newSensor, isOn: e.target.checked })}
             />
-          </div> */}
-          <div className="mb-4">
+          </div>
+          {/* <div className="mb-4">
             <label className="block text-white mb-2">Status</label>
             <input
               type="checkbox"
@@ -425,7 +425,7 @@ const SensorPage: React.FC = () => {
               checked={newSensor?.isOpen}
               onChange={(e) => setNewSensor({ ...newSensor, isOpen: e.target.checked })}
             />
-          </div>
+          </div> */}
           {/* <div className="mb-4">
             <label className="block text-white mb-2">Is On</label>
             <input
