@@ -32,7 +32,7 @@ export const useAlat = (branchId: string | number): UseAlatReturn => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await apiGet(`/sensor`);
+      const response = await apiGet(`/sensor/`);
       setAlatData(response as Alat[]);
       setError(null);
     } catch (error) {

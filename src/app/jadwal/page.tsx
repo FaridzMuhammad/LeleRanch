@@ -38,8 +38,8 @@ const JadwalPage: React.FC = () => {
     "Tanggal",
     "Deskripsi",
     "Sensor Code",
-    "Target Berat",
     "Berat",
+    "Target Berat",
   ]);
 
 

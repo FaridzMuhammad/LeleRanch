@@ -28,7 +28,7 @@ export const useBranch = (userId: string): UseBranchReturn => {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await apiGet(`/branch`);
+            const response = await apiGet(`/branch/`);
             setBranchData(response as Branch[]);
             setError(null);
         } catch (error) {
